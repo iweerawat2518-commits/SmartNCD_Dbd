@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SMART NCD MANAGEMENT – BUENGNIAM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --em-900:#064e3b;--em-800:#065f46;--em-700:#047857;--em-600:#059669;--em-500:#10b981;--em-100:#d1fae5;--em-50:#ecfdf5;
+  --blue-600:#0284c7;--blue-500:#0ea5e9;--blue-50:#f0f9ff;--orange-600:#ea580c;--orange-500:#f97316;--orange-50:#fff7ed;
+  --red-600:#dc2626;--red-50:#fef2f2;--ink:#0f172a;--ink-2:#334155;--muted:#64748b;--line:#e2e8f0;--bg:#f4f7f6;--card:#ffffff;
+  --radius:16px;--shadow:0 1px 2px rgba(15,23,42,.04),0 6px 20px rgba(6,78,59,.07);--shadow-lg:0 12px 40px rgba(6,78,59,.16);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{font-family:'Kanit',system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:var(--em-700)}
+button,input,select,textarea{font-family:inherit;font-size:14px}
+.hidden{display:none!important}
+/* ---------- login ---------- */
+#login{min-height:100vh;display:grid;grid-template-columns:1.1fr 1fr}
+.login-hero{background:radial-gradient(1200px 600px at -10% -10%,#34d399 0,transparent 60%),linear-gradient(140deg,var(--em-900),var(--em-700) 55%,#0e7490);color:#fff;padding:56px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
+.login-hero:after{content:"";position:absolute;right:-120px;bottom:-120px;width:420px;height:420px;border-radius:50%;border:60px solid rgba(255,255,255,.06)}
+.brand{display:flex;align-items:center;gap:14px}
+.brand-logo{width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,.16);display:grid;place-items:center;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
+.login-hero h1{font-size:40px;line-height:1.15;margin:0 0 14px;font-weight:600;letter-spacing:.3px}
+.login-hero .slogan{font-size:19px;opacity:.92;font-weight:300;max-width:520px}
+.hero-points{display:grid;gap:10px;margin-top:28px;font-weight:300}
+.hero-points div{display:flex;gap:10px;align-items:center}
+.login-panel{display:grid;place-items:center;padding:32px}
+.login-card{width:100%;max-width:400px;background:#fff;border-radius:22px;box-shadow:var(--shadow-lg);padding:34px}
+.login-card h2{margin:0 0 4px;font-weight:600}
+/* ---------- layout ---------- */
+#app{display:flex;min-height:100vh}
+.sidebar{width:264px;flex:0 0 264px;background:linear-gradient(180deg,var(--em-900),#053d30);color:#d1fae5;position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;z-index:40;transition:transform .25s}
+.sidebar .brand{padding:20px 18px 14px;color:#fff}
+.sidebar .brand small{display:block;font-size:11px;opacity:.75;font-weight:300;letter-spacing:.3px}
+.sidebar .brand b{font-size:15px;font-weight:600;line-height:1.2}
+.nav{padding:8px 10px 20px;display:grid;gap:2px}
+.nav-sec{font-size:11px;text-transform:uppercase;letter-spacing:1px;opacity:.55;padding:12px 12px 4px}
+.nav a{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:11px;color:#d1fae5;text-decoration:none;font-weight:400;font-size:14px;cursor:pointer}
+.nav a:hover{background:rgba(255,255,255,.07)}
+.nav a.active{background:linear-gradient(90deg,rgba(16,185,129,.35),rgba(16,185,129,.12));color:#fff;box-shadow:inset 3px 0 0 #34d399}
+.nav svg{width:18px;height:18px;flex:0 0 18px;opacity:.9}
+.side-foot{margin-top:auto;padding:16px 18px;font-size:12px;opacity:.7;font-weight:300}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:10px 24px;min-height:64px}
+.topbar .title{flex:1;min-width:0}
+.topbar .title h1{font-size:19px;margin:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .title .sub{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.burger{display:none;border:0;background:var(--em-50);color:var(--em-800);width:40px;height:40px;border-radius:11px;cursor:pointer}
+.userchip{display:flex;align-items:center;gap:10px;padding:5px 6px 5px 12px;border:1px solid var(--line);border-radius:999px;background:#fff}
+.userchip .nm{font-size:13px;line-height:1.15;text-align:right}
+.userchip .nm small{display:block;color:var(--muted);font-size:11px}
+.avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--em-500),var(--blue-500));color:#fff;display:grid;place-items:center;font-weight:600}
+.content{padding:22px 24px 48px;max-width:1500px;width:100%;margin:0 auto}
+.overlay{display:none}
+/* ---------- components ---------- */
+.grid{display:grid;gap:16px}
+.grid>*{min-width:0}
+html,body{overflow-x:hidden}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}.g5{grid-template-columns:repeat(5,minmax(0,1fr))}
+.span2{grid-column:span 2}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid rgba(226,232,240,.7);padding:18px 18px 16px;min-width:0}
+.card-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.card-h h3{margin:0;font-size:16px;font-weight:600;color:var(--em-900)}
+.card-h .hint{font-size:12px;color:var(--muted)}
+.kpi{position:relative;overflow:hidden;padding:16px 16px 14px}
+.kpi .lbl{font-size:13px;color:var(--ink-2);display:flex;gap:8px;align-items:center;min-height:38px}
+.kpi .ico{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;flex:0 0 34px}
+.kpi .val{font-size:30px;font-weight:600;line-height:1.1;margin-top:8px;letter-spacing:.3px}
+.kpi .val small{font-size:14px;font-weight:400;color:var(--muted);margin-left:4px}
+.kpi .note{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.35}
+.kpi:after{content:"";position:absolute;right:-30px;top:-30px;width:90px;height:90px;border-radius:50%;background:currentColor;opacity:.05}
+.tone-em{color:var(--em-700)}.tone-em .ico{background:var(--em-50);color:var(--em-700)}
+.tone-blue{color:var(--blue-600)}.tone-blue .ico{background:var(--blue-50);color:var(--blue-600)}
+.tone-orange{color:var(--orange-600)}.tone-orange .ico{background:var(--orange-50);color:var(--orange-600)}
+.tone-red{color:var(--red-600)}.tone-red .ico{background:var(--red-50);color:var(--red-600)}
+.tone-slate{color:#475569}.tone-slate .ico{background:#f1f5f9;color:#475569}
+.kpi .val,.kpi .lbl{color:var(--ink)}
+.hero-strip{background:linear-gradient(120deg,var(--em-800),var(--em-600) 60%,#0891b2);color:#fff;border-radius:20px;padding:22px 24px;display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap;box-shadow:var(--shadow-lg);margin-bottom:18px}
+.hero-strip h2{margin:0;font-size:22px;font-weight:600}
+.hero-strip .s{opacity:.9;font-weight:300;font-size:14px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:500;background:var(--em-50);color:var(--em-800);white-space:nowrap}
+.pill.blue{background:var(--blue-50);color:var(--blue-600)}.pill.orange{background:var(--orange-50);color:var(--orange-600)}.pill.red{background:var(--red-50);color:var(--red-600)}.pill.gray{background:#f1f5f9;color:#475569}
+.pill.white{background:rgba(255,255,255,.18);color:#fff}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:11px;padding:9px 16px;font-weight:500;cursor:pointer;background:var(--em-600);color:#fff;box-shadow:0 2px 8px rgba(5,150,105,.25);transition:.15s;white-space:nowrap}
+.btn:hover{background:var(--em-700)}.btn:disabled{opacity:.55;cursor:not-allowed}
+.btn.ghost{background:#fff;color:var(--em-800);border:1px solid var(--line);box-shadow:none}.btn.ghost:hover{background:var(--em-50)}
+.btn.blue{background:var(--blue-600);box-shadow:0 2px 8px rgba(2,132,199,.25)}.btn.orange{background:var(--orange-600)}.btn.red{background:var(--red-600)}
+.btn.sm{padding:6px 11px;font-size:13px;border-radius:9px}
+.field{display:grid;gap:5px;font-size:13px;color:var(--ink-2)}
+.field input,.field select,.field textarea{border:1px solid #cbd5e1;border-radius:10px;padding:9px 11px;background:#fff;color:var(--ink);outline:none;width:100%}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--em-500);box-shadow:0 0 0 3px rgba(16,185,129,.15)}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px}
+.toolbar .field{min-width:150px;flex:1}
+.tbl-wrap{overflow:auto;border-radius:12px;border:1px solid var(--line);max-width:100%}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px;background:#fff}
+table.t th{background:#f8fafc;color:var(--ink-2);font-weight:500;text-align:left;padding:9px 11px;border-bottom:1px solid var(--line);white-space:nowrap;position:sticky;top:0}
+table.t td{padding:8px 11px;border-bottom:1px solid #f1f5f9;vertical-align:top}
+table.t tr:hover td{background:#f8fffb}
+table.t td.num,table.t th.num{text-align:right;font-variant-numeric:tabular-nums}
+table.t tr.click{cursor:pointer}
+table.t tfoot td{font-weight:600;background:var(--em-50)}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.gchip{font-size:11.5px;padding:2px 8px;border-radius:999px;color:#fff;font-weight:500}
+.alert{border-radius:12px;padding:11px 14px;font-size:13.5px;display:flex;gap:10px;align-items:flex-start;margin-bottom:14px}
+.alert.info{background:var(--blue-50);color:#075985;border:1px solid #bae6fd}
+.alert.warn{background:var(--orange-50);color:#9a3412;border:1px solid #fed7aa}
+.alert.err{background:var(--red-50);color:#991b1b;border:1px solid #fecaca}
+.alert.ok{background:var(--em-50);color:var(--em-800);border:1px solid #a7f3d0}
+.chart-box{position:relative;height:300px}.chart-box.tall{height:380px}.chart-box.short{height:230px}
+.muted{color:var(--muted)}.small{font-size:12.5px}.right{text-align:right}
+.alert-card{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:#fff;cursor:pointer}
+.alert-card:hover{border-color:var(--orange-500)}
+.alert-card .n{font-size:24px;font-weight:600;color:var(--orange-600)}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+.pager{display:flex;gap:6px;align-items:center;justify-content:flex-end;margin-top:10px;font-size:13px}
+.heat td{text-align:center;font-weight:500;min-width:54px}
+.steps{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.step{padding:6px 14px;border-radius:999px;background:#fff;border:1px solid var(--line);font-size:13px;color:var(--muted)}
+.step.on{background:var(--em-600);color:#fff;border-color:var(--em-600)}
+.step.done{background:var(--em-50);color:var(--em-800);border-color:#a7f3d0}
+.progress{height:10px;border-radius:99px;background:#e2e8f0;overflow:hidden}.progress>div{height:100%;background:linear-gradient(90deg,var(--em-500),var(--blue-500));width:0;transition:width .2s}
+.drop{border:2px dashed #a7f3d0;border-radius:16px;padding:28px;text-align:center;background:var(--em-50);cursor:pointer}
+.drop:hover{border-color:var(--em-500)}
+.timeline{display:grid;gap:10px}
+.tl{border-left:3px solid var(--em-500);padding:6px 12px;background:#fafafa;border-radius:0 10px 10px 0}
+/* modal / toast */
+.modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.45);display:flex;align-items:flex-start;justify-content:center;padding:40px 14px;z-index:100;overflow:auto}
+.modal{background:#fff;border-radius:18px;max-width:720px;width:100%;box-shadow:var(--shadow-lg);padding:22px}
+.modal h3{margin:0 0 14px;color:var(--em-900)}
+.modal .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:200;display:grid;gap:8px}
+.toast{background:var(--ink);color:#fff;padding:10px 18px;border-radius:12px;box-shadow:var(--shadow-lg);font-size:14px}
+.toast.err{background:var(--red-600)}.toast.ok{background:var(--em-700)}
+.loading{display:flex;align-items:center;gap:10px;color:var(--muted);padding:30px;justify-content:center}
+.spin{width:22px;height:22px;border-radius:50%;border:3px solid var(--em-100);border-top-color:var(--em-600);animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.boot{min-height:100vh;display:grid;place-items:center}
+.report-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:6px 16px;font-size:13px;margin-bottom:12px}
+.sec-title{font-size:15px;font-weight:600;color:var(--em-900);margin:18px 0 8px}
+/* ---------- responsive ---------- */
+@media (max-width:1200px){.g5{grid-template-columns:repeat(3,minmax(0,1fr))}.g4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:960px){
+  #login{grid-template-columns:1fr}.login-hero{padding:32px 24px;min-height:auto}.login-hero h1{font-size:28px}.hero-points{display:none}
+  .sidebar{position:fixed;left:0;top:0;transform:translateX(-100%)}.sidebar.open{transform:none;box-shadow:var(--shadow-lg)}
+  .overlay.show{display:block;position:fixed;inset:0;background:rgba(15,23,42,.35);z-index:35}
+  .burger{display:grid;place-items:center}
+  .g2,.g3{grid-template-columns:1fr}.span2{grid-column:auto}
+  .content{padding:16px 14px 40px}.topbar{padding:8px 14px}
+  .userchip .nm{display:none}
+}
+@media (max-width:560px){#btnPw,.userchip{display:none}.topbar .btn.sm{padding:6px 9px}.kpi .lbl{font-size:12px}.g4,.g5{grid-template-columns:repeat(2,minmax(0,1fr))}.kpi .val{font-size:24px}.hero-strip h2{font-size:18px}.toolbar .field{min-width:100%}}
+@media print{.sidebar,.topbar,.no-print,.btn{display:none!important}.content{padding:0}.card{box-shadow:none;border:1px solid #ddd;break-inside:avoid}body{background:#fff}}
+</style>
+</head>
+<body>
+<div id="boot" class="boot"><div class="loading"><div class="spin"></div> กำลังโหลดระบบ SMART NCD…</div></div>
+
+<!-- ===================== LOGIN ===================== -->
+<div id="login" class="hidden">
+  <section class="login-hero">
+    <div class="brand"><div class="brand-logo"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg></div>
+      <div><div style="font-weight:600;letter-spacing:.5px">SMART NCD</div><div style="opacity:.8;font-size:13px;font-weight:300">รพ.สต.บึงเนียม อ.เมืองขอนแก่น</div></div></div>
+    <div>
+      <h1>SMART NCD MANAGEMENT<br>– BUENGNIAM</h1>
+      <div class="slogan">"รู้โรค รู้คน รู้พื้นที่ ติดตามต่อเนื่อง เพื่อสุขภาพดีของชุมชน"</div>
+      <div class="hero-points">
+        <div>● ทะเบียนผู้ป่วยโรคเรื้อรัง 12 หมู่บ้าน นับผู้ป่วยไม่ซ้ำคน</div>
+        <div>● วิเคราะห์โรคร่วม ประชากร และเปรียบเทียบรายหมู่บ้าน</div>
+        <div>● ติดตามผู้ป่วยต่อเนื่องร่วมกับ อสม. ตามสิทธิ์ที่ได้รับ</div>
+      </div>
+    </div>
+    <div style="font-size:12px;opacity:.7;font-weight:300">ข้อมูลสุขภาพเป็นข้อมูลส่วนบุคคลที่มีความอ่อนไหว (PDPA) – ใช้เฉพาะตามหน้าที่ที่ได้รับอนุญาต</div>
+  </section>
+  <section class="login-panel">
+    <form class="login-card" id="loginForm" autocomplete="on">
+      <h2>เข้าสู่ระบบ</h2>
+      <div class="muted small" style="margin-bottom:18px">สำหรับเจ้าหน้าที่และ อสม. ที่ได้รับบัญชีจากผู้ดูแลระบบ</div>
+      <div class="grid" style="gap:12px">
+        <label class="field">ชื่อผู้ใช้ (Username)<input id="lgUser" autocomplete="username" required maxlength="64"></label>
+        <label class="field">รหัสผ่าน<input id="lgPass" type="password" autocomplete="current-password" required maxlength="128"></label>
+        <div id="lgMsg" class="alert err hidden"></div>
+        <button class="btn" id="lgBtn" type="submit" style="width:100%;padding:12px">เข้าสู่ระบบ</button>
+      </div>
+      <div class="muted small" style="margin-top:16px">ลืมรหัสผ่าน: ติดต่อผู้ดูแลระบบเพื่อออกรหัสผ่านชั่วคราว</div>
+    </form>
+  </section>
+</div>
+
+<!-- ===================== APP ===================== -->
+<div id="app" class="hidden">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><div class="brand-logo" style="width:42px;height:42px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg></div>
+      <div><b>SMART NCD</b><small>MANAGEMENT – BUENGNIAM</small></div></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot">รู้โรค รู้คน รู้พื้นที่<br>ติดตามต่อเนื่อง เพื่อสุขภาพดีของชุมชน</div>
+  </aside>
+  <div class="overlay" id="overlay"></div>
+  <div class="main">
+    <header class="topbar">
+      <button class="burger" id="burger" aria-label="เมนู"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <div class="title"><h1 id="pgTitle">SMART NCD</h1><div class="sub" id="pgSub"></div></div>
+      <div class="userchip"><div class="nm"><span id="ucName"></span><small id="ucRole"></small></div><div class="avatar" id="ucAv">U</div></div>
+      <button class="btn ghost sm" id="btnPw" title="เปลี่ยนรหัสผ่าน">รหัสผ่าน</button>
+      <button class="btn ghost sm" id="btnLogout">ออกจากระบบ</button>
+    </header>
+    <main class="content" id="page"></main>
+  </div>
+</div>
+<div id="modalRoot"></div>
+<div id="toast"></div>
+
+<!-- ========== Excel import parser (ใช้ร่วมกับชุดทดสอบ) ========== -->
+<script id="ncd-import-parser">
+window.NCDParser = (function () {
+  var H = {
+    'รหัสรายการ': 'recordId', 'recordid': 'recordId', 'pid': 'pid', 'เลขบัตรประชาชน': 'pid', 'เลขประจำตัวประชาชน': 'pid', 'cid': 'pid',
+    'รหัสหน่วยบริการ': 'hospcode', 'hospcode': 'hospcode', 'hn': 'hn', 'ชื่อ': 'firstName', 'firstname': 'firstName', 'นามสกุล': 'lastName', 'lastname': 'lastName',
+    'รหัสหมู่บ้าน': 'villageId', 'villageid': 'villageId', 'หมู่ที่': 'moo', 'moo': 'moo', 'ชื่อหมู่บ้าน': 'villageName', 'villagename': 'villageName',
+    'รหัสโรค icd-10': 'icd10', 'icd10': 'icd10', 'icd-10': 'icd10', 'กลุ่มโรค': 'diseaseGroup', 'diseasegroup': 'diseaseGroup', 'ชื่อโรค': 'diseaseName', 'diseasename': 'diseaseName',
+    'วันที่วินิจฉัย': 'diagnosisDate', 'diagnosisdate': 'diagnosisDate', 'episode': 'episode', 'สถานะการวินิจฉัย': 'diagnosisStatus', 'diagnosisstatus': 'diagnosisStatus',
+    'สถานะการรักษา': 'treatmentStatus', 'วันที่รับบริการล่าสุด': 'lastVisitDate', 'หน่วยบริการที่รักษา': 'facility', 'ภาวะแทรกซ้อน': 'complication',
+    'แหล่งข้อมูล': 'dataSource', 'วันที่ปรับปรุงข้อมูล': 'updatedDate', 'ผู้บันทึก': 'recorder', 'หมายเหตุ': 'note', 'ตรวจสอบข้อมูลแล้ว': 'verified',
+    'รหัสคำนำหน้า': 'prefixCode', 'คำนำหน้า': 'prefix', 'เพศ': 'sex', 'sex': 'sex', 'อายุ (ปี-เดือน-วัน)': 'ageText', 'อายุ (ปี)': 'ageYears',
+    'วันเกิด': 'birthDate', 'birthdate': 'birthDate', 'ที่อยู่ที่ติดต่อได้': 'address', 'ที่อยู่': 'address', 'เขตรับผิดชอบ': 'area',
+    'สถานะปัจจุบัน (jhcis)': 'sourceStatus', 'สถานพยาบาลที่รักษา (jhcis)': 'sourceFacility', 'รหัสบุคคล (นับไม่ซ้ำ)': 'personKey', 'แถวในไฟล์ต้นฉบับ': 'sourceRow'
+  };
+  var DATE_KEYS = { diagnosisDate: 1, lastVisitDate: 1, updatedDate: 1, birthDate: 1 };
+  var TH_MONTHS = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+  var TREAT = { 'ยังรักษาอยู่ฯ': 'กำลังรักษา', 'หาย': 'หาย/ครบการรักษา', 'ครบการรักษาฯ': 'หาย/ครบการรักษา', 'โรคอยู่ในภาวะสงบฯ': 'โรคสงบ', 'ไม่ทราบ(ไม่มีข้อมูล)': 'ไม่ทราบ', '': 'ไม่ทราบ' };
+  var HOSP = { 'บึงเนียม บ้านบึงเนียม': 'รพ.สต.บึงเนียม', 'ขอนแก่น,โรงพยาบาล': 'โรงพยาบาลขอนแก่น', 'ศรีนครินทร์,โรงพยาบาล': 'โรงพยาบาลศรีนครินทร์', 'น้ำพอง,รพช.': 'โรงพยาบาลน้ำพอง',
+    'โคราชเมโมเรียล,โรง': 'โรงพยาบาลโคราชเมโมเรียล', 'ศูนย์หัวใจสิริกิติ์ ภาค': 'ศูนย์หัวใจสิริกิติ์ ภาคตะวันออกเฉียงเหนือ', 'พระลับ บ้านผือ หมู่ที่': 'รพ.สต.พระลับ บ้านผือ' };
+  function norm(s) { return String(s === null || s === undefined ? '' : s).replace(/\s+/g, ' ').trim(); }
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function cellIso(v) {
+    if (typeof v === 'number' && window.XLSX) { var d = XLSX.SSF.parse_date_code(v); if (d && d.y) return d.y + '-' + pad(d.m) + '-' + pad(d.d); }
+    if (v instanceof Date && !isNaN(v)) return v.getFullYear() + '-' + pad(v.getMonth() + 1) + '-' + pad(v.getDate());
+    return norm(v);
+  }
+  function thaiDate(s) {
+    var m = norm(s).match(/^(\d{1,2})\s+(\S+)\s+(\d{4})$/); if (!m) return '';
+    var mi = TH_MONTHS.indexOf(m[2]); if (mi < 0) return '';
+    var y = +m[3]; if (y > 2400) y -= 543;
+    return y + '-' + pad(mi + 1) + '-' + pad(+m[1]);
+  }
+  function aoa(ws) { return XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: '', blankrows: true }); }
+  function findHeader(rows) {
+    var best = null;
+    for (var r = 0; r < Math.min(rows.length, 15); r++) {
+      var map = {}, hits = 0;
+      rows[r].forEach(function (c, i) { var k = H[norm(c).toLowerCase()]; if (k && map[k] === undefined) { map[k] = i; hits++; } });
+      if (hits >= 3 && map.firstName !== undefined && (!best || hits > best.hits)) best = { row: r, map: map, hits: hits };
+    }
+    return best;
+  }
+  function parseTable(rows, hdr) {
+    var out = [];
+    for (var r = hdr.row + 1; r < rows.length; r++) {
+      var row = rows[r], o = { _row: r + 1 }, any = false;
+      Object.keys(hdr.map).forEach(function (k) {
+        var v = row[hdr.map[k]];
+        v = DATE_KEYS[k] ? cellIso(v) : (typeof v === 'number' ? String(v) : norm(v));
+        if (v !== '') { o[k] = v; any = true; }
+      });
+      if (any && (o.firstName || o.lastName || o.diseaseName || o.pid)) out.push(o);
+    }
+    return out;
+  }
+  function parseJhcis(rows, villages) {
+    var issues = [], out = [], reportDate = '', sec = null, inIdx = 0, disease = '', totals = [];
+    for (var r = 0; r < Math.min(rows.length, 8); r++) rows[r].forEach(function (c) { var d = thaiDate(c); if (d && !reportDate) reportDate = d; });
+    for (r = 0; r < rows.length; r++) {
+      var row = rows[r], c1 = norm(row[1]);
+      if (c1 === 'หมู่บ้าน :') {
+        var name = norm(row[4]);
+        if (/นอกเขต/.test(name)) sec = { out: true, name: name };
+        else {
+          inIdx++;
+          var exp = villages[inIdx - 1], moo = null;
+          if (exp && exp.name === name) moo = exp.moo;
+          else { var c = villages.filter(function (v) { return v.name === name; }); if (c.length === 1) moo = c[0].moo; }
+          if (moo === null) issues.push('ระบุหมู่ของส่วน "' + name + '" ไม่ได้ (แถว ' + (r + 1) + ')');
+          sec = { out: false, name: name, moo: moo };
+        }
+        disease = ''; continue;
+      }
+      if (c1 === '' && norm(row[2])) { disease = norm(row[2]); continue; }
+      if (/^จำนวนคนจริง/.test(c1)) { var m = norm(row[8]).match(/^(.*) = (\d+) คน \(จำนวนคน นับทุกโรค (\d+) คน\)/); if (m) totals.push({ name: m[1], persons: +m[2], records: +m[3] }); continue; }
+      if (/^\d+\.$/.test(c1) && sec) {
+        var nm = norm(row[3]), code = /^\d{3}/.test(nm) ? nm.substr(0, 3) : '', st = norm(row[18]), hosp = norm(row[19]), age = norm(row[13]);
+        if (!disease) { issues.push('แถว ' + (r + 1) + ': ไม่พบชื่อโรค'); continue; }
+        out.push({ _row: r + 1, firstName: code ? nm.substr(3).trim() : nm, prefixCode: code, lastName: norm(row[9]), address: norm(row[10]), ageText: age,
+          ageYears: age ? age.split('-')[0] : '', sourceStatus: st, treatmentStatus: TREAT[st] || 'ไม่ทราบ', sourceFacility: hosp, facility: HOSP[hosp] || hosp,
+          diseaseName: disease, area: sec.out ? 'นอกเขต' : 'ในเขต', moo: sec.out ? '' : (sec.moo === null ? '' : String(sec.moo)), dataSource: 'JHCIS',
+          diagnosisStatus: 'ยืนยันแล้ว', updatedDate: reportDate });
+      }
+    }
+    if (!reportDate) issues.push('ไม่พบวันที่ประมวลผลรายงาน');
+    return { rows: out, issues: issues, asOf: reportDate, totals: totals };
+  }
+  /** ตรวจชนิดไฟล์และแปลงเป็นแถวข้อมูลมาตรฐาน */
+  function parseWorkbook(wb, villages) {
+    var best = null;
+    wb.SheetNames.forEach(function (n) {
+      var rows = aoa(wb.Sheets[n]), hdr = findHeader(rows);
+      if (hdr && (!best || hdr.hits > best.hdr.hits)) best = { name: n, rows: rows, hdr: hdr };
+    });
+    if (best) {
+      var m = best.hdr.map, type = (m.diseaseName !== undefined || m.icd10 !== undefined) ? 'REGISTRY' : (m.pid !== undefined ? 'POPULATION' : null);
+      if (!type) return { error: 'ไม่พบคอลัมน์ชื่อโรค/ICD-10 หรือ PID – ไม่ใช่ไฟล์ที่รองรับ' };
+      var rows = parseTable(best.rows, best.hdr), asOf = '';
+      rows.forEach(function (r) { if (r.updatedDate && /^\d{4}-\d{2}-\d{2}$/.test(r.updatedDate) && r.updatedDate > asOf) asOf = r.updatedDate; });
+      return { type: type, sheetName: best.name, headerRow: best.hdr.row + 1, headersFound: Object.keys(m), rows: rows, asOf: asOf, issues: [] };
+    }
+    for (var i = 0; i < wb.SheetNames.length; i++) {
+      var rr = aoa(wb.Sheets[wb.SheetNames[i]]);
+      var isJ = rr.slice(0, 6).some(function (row) { return row.some(function (c) { return /รายชื่อผู้ป่วยโรคเรื้อรัง/.test(norm(c)); }); });
+      if (isJ) {
+        var j = parseJhcis(rr, villages || []);
+        return { type: 'JHCIS_REPORT', sheetName: wb.SheetNames[i], headerRow: 0, headersFound: ['firstName', 'lastName', 'diseaseName', 'moo', 'area', 'treatmentStatus', 'prefixCode', 'address', 'ageText'],
+          rows: j.rows, asOf: j.asOf, issues: j.issues, totals: j.totals };
+      }
+    }
+    return { error: 'ไม่พบหัวคอลัมน์ตามแม่แบบ (เช่น ชื่อ, นามสกุล, ชื่อโรค, ICD-10) หรือรูปแบบรายงาน JHCIS' };
+  }
+  function parseUsers(wb) {
+    var UH = { 'username': 'username', 'ชื่อผู้ใช้': 'username', 'role': 'role', 'บทบาท': 'role', 'villageid': 'villageId', 'villagescope': 'villageId', 'หมู่ที่': 'villageId',
+      'ชื่อผู้ใช้งาน': 'displayName', 'displayname': 'displayName', 'สถานะบัญชี': 'status', 'status': 'status', 'หมายเหตุ': 'note', 'note': 'note' };
+    for (var s = 0; s < wb.SheetNames.length; s++) {
+      var rows = aoa(wb.Sheets[wb.SheetNames[s]]);
+      for (var r = 0; r < Math.min(rows.length, 15); r++) {
+        var map = {};
+        rows[r].forEach(function (c, i) { var k = UH[norm(c).toLowerCase()]; if (k && map[k] === undefined) map[k] = i; });
+        if (map.username !== undefined && map.role !== undefined) {
+          var out = [];
+          for (var k = r + 1; k < rows.length; k++) {
+            var o = {}; Object.keys(map).forEach(function (f) { o[f] = norm(rows[k][map[f]]); });
+            if (o.username && !/^ตัวอย่าง|^example/i.test(o.note || '')) out.push(o);
+          }
+          return { rows: out, sheetName: wb.SheetNames[s] };
+        }
+      }
+    }
+    return { error: 'ไม่พบหัวคอลัมน์ Username และ Role' };
+  }
+  return { parseWorkbook: parseWorkbook, parseUsers: parseUsers, thaiDate: thaiDate };
+})();
+</script>
+
+<script>
+(function () {
+'use strict';
+/* =====================================================================
+ * การเชื่อมต่อ: ระบบนี้ออกแบบให้ GAS HtmlService เสิร์ฟไฟล์นี้ (doGet) และเรียก backend
+ * ผ่าน google.script.run (ไม่มีปัญหา CORS, ไม่ใช้ JSONP)
+ * หากเปิดไฟล์นี้จากเครื่อง/Static hosting จะแสดงลิงก์ไปยัง Web App แทน
+ * ===================================================================== */
+var GAS_API_URL = "https://script.google.com/macros/s/AKfycbws3Z6gsSq-CxaO6ObGOu4PGhQFQZK7HCXBQZzjPwhHGAW1koVEvx5d7P-Nxpd2afA/exec";
+
+var S = { token: null, session: null, page: null, arg: null, charts: [], moo: 'ALL', idleTimer: null };
+var $ = function (s, r) { return (r || document).querySelector(s); };
+var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+function esc(v) { return String(v === null || v === undefined ? '' : v).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function fmt(n, d) { if (n === null || n === undefined || n === '') return '—'; var x = Number(n); return isNaN(x) ? esc(n) : x.toLocaleString('th-TH', { maximumFractionDigits: d === undefined ? 1 : d }); }
+var TH_M = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+function thDate(iso) { if (!iso) return '—'; var m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/); if (!m) return esc(iso); return (+m[3]) + ' ' + TH_M[+m[2] - 1] + ' ' + (+m[1] + 543) + (String(iso).length > 10 ? ' ' + String(iso).substr(11, 5) : ''); }
+function todayIso() { var d = new Date(); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+function groupInfo(code) { var g = (S.session && S.session.groups || []).filter(function (x) { return x.code === code; })[0]; return g || { code: code, th: code, color: '#94a3b8' }; }
+function gchips(list) { return '<div class="chips">' + (list || []).map(function (g) { var i = groupInfo(g); return '<span class="gchip" style="background:' + i.color + '" title="' + esc(i.th) + '">' + esc(g) + '</span>'; }).join('') + '</div>'; }
+
+/* ---------------------------- API ---------------------------- */
+/* โหมดเชื่อมต่อ: (1) เปิดผ่าน Web App → google.script.run
+ *               (2) เปิด index.html จากเครื่อง/โฮสต์อื่น → fetch POST ไปยัง doPost ของ GAS_API_URL
+ *                   (text/plain = simple request ไม่มี preflight, HTTPS, token อยู่ใน body ไม่ใช่ URL, ไม่ใช้ JSONP) */
+var HAS_GSR = typeof google !== 'undefined' && google.script && google.script.run;
+var API_OK = /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(GAS_API_URL);
+function call(fn) {
+  var args = Array.prototype.slice.call(arguments, 1);
+  return new Promise(function (resolve, reject) {
+    function handle(r) {
+      if (!r) return reject({ code: 'INTERNAL', message: 'ไม่มีการตอบกลับจากเซิร์ฟเวอร์' });
+      if (r.ok) return resolve(r.data);
+      if (r.error && r.error.code === 'AUTH') authLost(r.error.message);
+      if (r.error && r.error.code === 'PWCHANGE') showChangePassword(true);
+      reject(r.error || { message: 'เกิดข้อผิดพลาด' });
+    }
+    if (HAS_GSR) {
+      var runner = google.script.run.withSuccessHandler(handle)
+        .withFailureHandler(function (e) { reject({ code: 'NETWORK', message: (e && e.message) || 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้' }); });
+      return runner[fn].apply(runner, args);
+    }
+    fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ fn: fn, args: args }), redirect: 'follow', cache: 'no-store', credentials: 'omit' })
+      .then(function (res) {
+        return res.text().then(function (t) {
+          try { return JSON.parse(t); }
+          catch (e) { throw { code: 'NETWORK', message: 'เซิร์ฟเวอร์ไม่ได้ตอบเป็น JSON – ตรวจสอบว่า Deploy เป็นเวอร์ชันล่าสุด และตั้ง "ผู้มีสิทธิ์เข้าถึง: ทุกคน (Anyone)"' }; }
+        });
+      })
+      .then(handle)
+      .catch(function (e) { reject(e && e.code ? e : { code: 'NETWORK', message: 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ (' + ((e && e.message) || 'network') + ') – ตรวจสอบอินเทอร์เน็ตและ GAS_API_URL' }); });
+  });
+}
+function api(fn) { var a = Array.prototype.slice.call(arguments, 1); return call.apply(null, [fn, S.token].concat(a)); }
+function toast(msg, type) { var t = document.createElement('div'); t.className = 'toast ' + (type || ''); t.textContent = msg; $('#toast').appendChild(t); setTimeout(function () { t.remove(); }, 4200); }
+function errBox(e) { return '<div class="alert err">⚠ ' + esc(e && e.message || e) + '</div>'; }
+function loadingHtml(t) { return '<div class="loading"><div class="spin"></div>' + esc(t || 'กำลังโหลดข้อมูล…') + '</div>'; }
+
+/* -------------------------- SESSION -------------------------- */
+function storeToken(t) { S.token = t; try { if (t) sessionStorage.setItem('ncd_token', t); else sessionStorage.removeItem('ncd_token'); } catch (e) { } }
+function authLost(msg) {
+  storeToken(null); S.session = null;
+  showLogin(msg || 'Session หมดอายุ กรุณาเข้าสู่ระบบใหม่');
+}
+function showLogin(msg) {
+  $('#boot').classList.add('hidden'); $('#app').classList.add('hidden'); $('#login').classList.remove('hidden');
+  var m = $('#lgMsg'); if (msg) { m.textContent = msg; m.classList.remove('hidden'); } else m.classList.add('hidden');
+}
+function resetIdle() {
+  if (!S.session) return;
+  clearTimeout(S.idleTimer);
+  S.idleTimer = setTimeout(function () { doLogout('ไม่มีการใช้งานเกิน ' + S.session.settings.idleMinutes + ' นาที ระบบออกจากระบบอัตโนมัติ'); }, S.session.settings.idleMinutes * 60000);
+}
+['click', 'keydown', 'touchstart'].forEach(function (ev) { document.addEventListener(ev, resetIdle, { passive: true }); });
+function doLogout(msg) { var t = S.token; storeToken(null); S.session = null; if (t) call('logoutUser', t).catch(function () { }); showLogin(msg || 'ออกจากระบบเรียบร้อย'); }
+
+$('#loginForm').addEventListener('submit', function (e) {
+  e.preventDefault();
+  var b = $('#lgBtn'); b.disabled = true; b.textContent = 'กำลังตรวจสอบ…'; $('#lgMsg').classList.add('hidden');
+  call('login', $('#lgUser').value.trim(), $('#lgPass').value).then(function (d) {
+    $('#lgPass').value = ''; storeToken(d.token); return startApp();
+  }).catch(function (er) { showLogin(er.message); }).then(function () { b.disabled = false; b.textContent = 'เข้าสู่ระบบ'; });
+});
+$('#btnLogout').onclick = function () { doLogout(); };
+$('#btnPw').onclick = function () { showChangePassword(false); };
+$('#burger').onclick = function () { $('#sidebar').classList.toggle('open'); $('#overlay').classList.toggle('show'); };
+$('#overlay').onclick = function () { $('#sidebar').classList.remove('open'); $('#overlay').classList.remove('show'); };
+
+function startApp() {
+  return api('getSessionInfo').then(function (s) {
+    S.session = s;
+    $('#boot').classList.add('hidden'); $('#login').classList.add('hidden'); $('#app').classList.remove('hidden');
+    $('#ucName').textContent = s.user.displayName; $('#ucRole').textContent = roleLabel(s.user.role) + (s.user.allVillages ? '' : ' • หมู่ ' + s.user.scope);
+    $('#ucAv').textContent = (s.user.displayName || 'U').charAt(0);
+    if (!s.user.allVillages && s.villages.length === 1) S.moo = String(s.villages[0].moo);
+    buildNav(); resetIdle();
+    if (s.user.mustChangePassword) { $('#page').innerHTML = '<div class="alert warn">กรุณาตั้งรหัสผ่านใหม่ก่อนใช้งานระบบ</div>'; showChangePassword(true); return; }
+    var h = (location.hash || '').replace('#', '').split('/');
+    go(h[0] && s.menu.some(function (m) { return m.id === h[0]; }) ? h[0] : s.menu[0].id, h[1]);
+  });
+}
+function roleLabel(r) { return { ADMIN: 'ผู้ดูแลระบบ', STAFF: 'เจ้าหน้าที่', VILLAGE_USER: 'อสม.' }[r] || r; }
+
+/* ---------------------------- NAV ---------------------------- */
+var ICONS = {
+  gauge: '<path d="M12 14l4-4"/><path d="M3.3 19a9 9 0 1 1 17.4 0"/>', pulse: '<path d="M3 12h4l3-7 4 14 3-7h4"/>', virus: '<circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4M5 5l3 3M16 16l3 3M5 19l3-3M16 8l3-3"/>',
+  map: '<path d="M9 18l-6 3V6l6-3 6 3 6-3v15l-6 3-6-3z"/><path d="M9 3v15M15 6v15"/>', link: '<circle cx="8" cy="12" r="5"/><circle cx="16" cy="12" r="5"/>',
+  users: '<circle cx="9" cy="8" r="4"/><path d="M1 21a8 8 0 0 1 16 0"/><path d="M17 4a4 4 0 0 1 0 8M23 21a8 8 0 0 0-5-7.4"/>', id: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="11" r="2.5"/><path d="M14 10h4M14 14h4M6 16h6"/>',
+  calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>', clipboard: '<rect x="5" y="4" width="14" height="18" rx="2"/><path d="M9 4V2h6v2M9 12h6M9 16h4"/>',
+  file: '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 14h8M8 18h5"/>', upload: '<path d="M12 16V4M6 10l6-6 6 6"/><path d="M4 20h16"/>',
+  shield: '<path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/>', clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>', list: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+  gear: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>'
+};
+function icon(n, size) { return '<svg width="' + (size || 18) + '" height="' + (size || 18) + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">' + (ICONS[n] || ICONS.pulse) + '</svg>'; }
+var SECTIONS = { executive: 'วิเคราะห์', registry: 'ผู้ป่วย', reports: 'รายงาน', import: 'ผู้ดูแลระบบ' };
+function buildNav() {
+  var html = '';
+  S.session.menu.forEach(function (m) {
+    var sec = SECTIONS[m.id] || (m.id === 'overview' && S.session.user.role === 'VILLAGE_USER' ? 'หมู่บ้านของฉัน' : null);
+    if (sec) html += '<div class="nav-sec">' + esc(sec) + '</div>';
+    html += '<a data-p="' + esc(m.id) + '">' + icon(m.icon) + '<span>' + esc(m.label) + '</span></a>';
+  });
+  $('#nav').innerHTML = html;
+  $$('#nav a').forEach(function (a) { a.onclick = function () { go(a.getAttribute('data-p')); $('#sidebar').classList.remove('open'); $('#overlay').classList.remove('show'); }; });
+}
+function go(page, arg) {
+  if (!S.session.menu.some(function (m) { return m.id === page; })) page = S.session.menu[0].id;
+  S.page = page; S.arg = arg || null;
+  try { history.replaceState(null, '', '#' + page + (arg ? '/' + arg : '')); } catch (e) { }
+  $$('#nav a').forEach(function (a) { a.classList.toggle('active', a.getAttribute('data-p') === page); });
+  S.charts.forEach(function (c) { try { c.destroy(); } catch (e) { } }); S.charts = [];
+  var m = S.session.menu.filter(function (x) { return x.id === page; })[0];
+  setTitle(m.label, scopeText());
+  $('#page').innerHTML = loadingHtml();
+  window.scrollTo(0, 0);
+  Promise.resolve().then(function () { return PAGES[page](arg); }).catch(function (e) { $('#page').innerHTML = errBox(e); });
+}
+function setTitle(t, sub) { $('#pgTitle').textContent = t; $('#pgSub').textContent = sub || ''; }
+function scopeText() {
+  var s = S.session, v = s.villages.filter(function (x) { return String(x.moo) === String(S.moo); })[0];
+  var base = S.moo === 'ALL' ? (s.user.allVillages ? 'ทั้งตำบลบึงเนียม' : 'หมู่บ้านที่รับผิดชอบ') : (S.moo === 'OUT' ? 'นอกเขตรับผิดชอบ' : 'หมู่ที่ ' + S.moo + (v ? ' บ้าน' + v.name : ''));
+  return base + (s.dataAsOf ? ' • ข้อมูล ณ ' + thDate(s.dataAsOf) : ' • ยังไม่มีข้อมูลนำเข้า');
+}
+function villageSelect(id, opts) {
+  opts = opts || {};
+  var s = S.session;
+  if (!s.user.allVillages && s.villages.length === 1) return '';
+  var o = '<option value="ALL">' + (s.user.allVillages ? 'ทั้งตำบล' : 'ทุกหมู่ที่รับผิดชอบ') + '</option>';
+  s.villages.forEach(function (v) { o += '<option value="' + v.moo + '"' + (String(S.moo) === String(v.moo) ? ' selected' : '') + '>หมู่ ' + v.moo + ' ' + esc(v.name) + '</option>'; });
+  if (s.user.allVillages && opts.out !== false) o += '<option value="OUT"' + (S.moo === 'OUT' ? ' selected' : '') + '>นอกเขตรับผิดชอบ</option>';
+  return '<label class="field" style="max-width:260px">หมู่บ้าน<select id="' + id + '">' + o + '</select></label>';
+}
+function bindVillage(id, rerender) { var el = $('#' + id); if (el) { el.value = String(S.moo); el.onchange = function () { S.moo = el.value; setTitle($('#pgTitle').textContent, scopeText()); rerender(); }; } }
+
+/* --------------------------- UI helpers --------------------------- */
+function kpiCard(k, tone, ic) {
+  var v = k.value === null || k.value === undefined ? '<span style="font-size:18px;color:#94a3b8">ไม่มีข้อมูล</span>' : fmt(k.value) + '<small>' + esc(k.unit || '') + '</small>';
+  return '<div class="card kpi tone-' + (tone || 'em') + '"><div class="lbl"><span class="ico">' + icon(ic || 'pulse', 18) + '</span>' + esc(k.label) + '</div><div class="val">' + v + '</div><div class="note">' + esc(k.note || '') + '</div></div>';
+}
+function card(title, body, hint, extra) { return '<div class="card ' + (extra || '') + '"><div class="card-h"><h3>' + esc(title) + '</h3>' + (hint ? '<span class="hint">' + hint + '</span>' : '') + '</div>' + body + '</div>'; }
+function table(cols, rows, opts) {
+  opts = opts || {};
+  if (!rows.length) return '<div class="empty">' + esc(opts.empty || 'ไม่มีข้อมูล') + '</div>';
+  var h = '<div class="tbl-wrap"' + (opts.maxH ? ' style="max-height:' + opts.maxH + 'px"' : '') + '><table class="t ' + (opts.cls || '') + '"><thead><tr>' + cols.map(function (c) { return '<th class="' + (c.num ? 'num' : '') + '">' + esc(c.label) + '</th>'; }).join('') + '</tr></thead><tbody>';
+  rows.forEach(function (r, i) {
+    h += '<tr' + (opts.click ? ' class="click" data-i="' + i + '"' : '') + '>' + cols.map(function (c) { var v = typeof c.get === 'function' ? c.get(r) : r[c.key]; return '<td class="' + (c.num ? 'num' : '') + '">' + (c.html ? v : (c.num ? fmt(v) : esc(v === undefined || v === null || v === '' ? '—' : v))) + '</td>'; }).join('') + '</tr>';
+  });
+  h += '</tbody>' + (opts.foot ? '<tfoot><tr>' + opts.foot.map(function (v, j) { return '<td class="' + (cols[j] && cols[j].num ? 'num' : '') + '">' + (cols[j] && cols[j].num ? fmt(v) : esc(v)) + '</td>'; }).join('') + '</tr></tfoot>' : '') + '</table></div>';
+  return h;
+}
+function bindRows(container, rows, fn) { $$('tr.click', container).forEach(function (tr) { tr.onclick = function () { fn(rows[+tr.getAttribute('data-i')]); }; }); }
+function pager(res, onPage) {
+  var id = 'pg' + Math.random().toString(36).slice(2, 7);
+  setTimeout(function () { $$('#' + id + ' button').forEach(function (b) { b.onclick = function () { onPage(+b.getAttribute('data-p')); }; }); }, 0);
+  return '<div class="pager" id="' + id + '"><span class="muted">ทั้งหมด ' + fmt(res.total) + ' รายการ • หน้า ' + res.page + '/' + res.pages + '</span>' +
+    '<button class="btn ghost sm" data-p="' + Math.max(1, res.page - 1) + '"' + (res.page <= 1 ? ' disabled' : '') + '>‹ ก่อนหน้า</button>' +
+    '<button class="btn ghost sm" data-p="' + Math.min(res.pages, res.page + 1) + '"' + (res.page >= res.pages ? ' disabled' : '') + '>ถัดไป ›</button></div>';
+}
+function mkChart(id, cfg) {
+  var el = document.getElementById(id); if (!el || !window.Chart) return;
+  cfg.options = cfg.options || {}; cfg.options.maintainAspectRatio = false; cfg.options.responsive = true;
+  S.charts.push(new Chart(el.getContext('2d'), cfg));
+}
+if (window.Chart) { Chart.defaults.font.family = 'Kanit'; Chart.defaults.color = '#475569'; Chart.defaults.plugins.legend.labels.usePointStyle = true; }
+function modal(title, body, actions) {
+  var root = $('#modalRoot');
+  root.innerHTML = '<div class="modal-bg"><div class="modal" role="dialog" aria-modal="true"><h3>' + esc(title) + '</h3><div id="mBody">' + body + '</div><div class="actions" id="mAct"></div></div></div>';
+  (actions || [{ label: 'ปิด', cls: 'ghost' }]).forEach(function (a) {
+    var b = document.createElement('button'); b.className = 'btn ' + (a.cls || ''); b.textContent = a.label;
+    b.onclick = function () { var r = a.onClick ? a.onClick(b) : true; Promise.resolve(r).then(function (close) { if (close !== false) closeModal(); }); };
+    $('#mAct').appendChild(b);
+  });
+  return $('#mBody');
+}
+function closeModal() { $('#modalRoot').innerHTML = ''; }
+function confirmBox(msg) { return new Promise(function (res) { modal('ยืนยันการดำเนินการ', '<p>' + esc(msg) + '</p>', [{ label: 'ยกเลิก', cls: 'ghost', onClick: function () { res(false); } }, { label: 'ยืนยัน', onClick: function () { res(true); } }]); }); }
+function basis(t) { return t ? '<div class="muted small" style="margin-top:8px">ℹ ' + esc(t) + '</div>' : ''; }
+function selectOpts(list, cur, empty) { return (empty !== undefined ? '<option value="">' + esc(empty) + '</option>' : '') + list.map(function (x) { var v = typeof x === 'object' ? x.v : x, l = typeof x === 'object' ? x.l : x; return '<option value="' + esc(v) + '"' + (String(cur) === String(v) ? ' selected' : '') + '>' + esc(l) + '</option>'; }).join(''); }
+function downloadCsv(name, cols, rows) {
+  var csv = '﻿' + [cols].concat(rows).map(function (r) { return r.map(function (v) { v = String(v === null || v === undefined ? '' : v); if (/^[=+\-@]/.test(v)) v = "'" + v; return '"' + v.replace(/"/g, '""') + '"'; }).join(','); }).join('\r\n');
+  var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* ============================== PAGES ============================== */
+var PAGES = {};
+
+/* ---------- Executive Dashboard ---------- */
+PAGES.executive = function () {
+  var draw = function () {
+    $('#page').innerHTML = loadingHtml();
+    return api('getDashboardData', { moo: S.moo }).then(function (d) {
+      var k = {}; d.kpi.forEach(function (x) { k[x.key] = x; });
+      var tones = { population: ['slate', 'users'], patients: ['em', 'pulse'], prevalence: ['blue', 'gauge'], DM: ['em', 'virus'], HT: ['blue', 'virus'], CKD: ['slate', 'virus'], DLP: ['orange', 'virus'], comorbid: ['red', 'link'], needFollow: ['orange', 'calendar'], incomplete: ['orange', 'list'] };
+      var html = '<div class="hero-strip"><div><h2>Executive NCD Dashboard</h2><div class="s">' + esc(d.scope.label) + ' • ' + (d.scope.asOf ? 'ข้อมูล ณ ' + thDate(d.scope.asOf) : 'ยังไม่มีข้อมูล') + '</div></div>' +
+        '<div class="toolbar no-print" style="margin:0">' + villageSelect('vSel').replace('class="field"', 'class="field" style="color:#fff;max-width:260px"') + '</div></div>';
+      if (!d.population.available) html += '<div class="alert info">ℹ ยังไม่มีข้อมูลประชากรที่ใช้เป็นตัวหาร ระบบจึงไม่คำนวณร้อยละผู้ป่วยต่อประชากร – ADMIN กรอกจำนวนประชากรรายหมู่บ้าน (พร้อมแหล่งที่มา) ที่ System Settings หรือนำเข้าทะเบียนประชาชน</div>';
+      html += '<div class="grid g5">' + d.kpi.map(function (x) { var t = tones[x.key] || ['em', 'pulse']; return kpiCard(x, t[0], t[1]); }).join('') + '</div>';
+      html += '<div class="grid g3" style="margin-top:16px"><div class="span2">' + card('จำนวนผู้ป่วยแยกกลุ่มโรค (ไม่ซ้ำคน)', '<div class="chart-box"><canvas id="cGroups"></canvas></div>', d.disease.topGroup ? 'สูงสุด: ' + esc(d.disease.topGroup.name) + ' ' + fmt(d.disease.topGroup.persons) + ' คน' : '') + '</div>' +
+        card('สัดส่วนโรคเรื้อรัง (คน-กลุ่มโรค)', '<div class="chart-box"><canvas id="cPie"></canvas></div>') + '</div>';
+      html += '<div class="grid g3" style="margin-top:16px"><div class="span2">' + card('ผู้ป่วยรายหมู่บ้าน แยกกลุ่มโรค', '<div class="chart-box tall"><canvas id="cVill"></canvas></div>', 'Stacked • คนต่อกลุ่มโรค') + '</div>' +
+        card('การแจ้งเตือนการติดตาม', d.alerts.map(function (a) { return '<div class="alert-card" data-k="' + a.key + '" style="margin-bottom:8px"><span>' + esc(a.label) + '</span><span class="n">' + fmt(a.count) + '</span></div>'; }).join(''), '<a href="javascript:void(0)" id="goF">ดูทั้งหมด</a>') + '</div>';
+      html += '<div class="grid g2" style="margin-top:16px">' + card('รูปแบบโรคร่วม (มีอย่างน้อย)', '<div class="chart-box"><canvas id="cCo"></canvas></div>', 'ผู้ป่วยโรคร่วม ≥2: ' + fmt(d.comorbidity.multi2) + ' • ≥3: ' + fmt(d.comorbidity.multi3)) +
+        card('แนวโน้มจำนวนผู้ป่วยตามรอบข้อมูล', d.disease.trend.length >= 2 ? '<div class="chart-box"><canvas id="cTrend"></canvas></div>' : '<div class="empty">มีข้อมูล ' + d.disease.trend.length + ' รอบ – แนวโน้มรายปีจะแสดงเมื่อมีการนำเข้าข้อมูลมากกว่า 1 รอบ (ต่างวันที่ข้อมูล)</div>') + '</div>';
+      if (d.screening.total) html += '<div class="alert info" style="margin-top:16px">ผลคัดกรอง ' + fmt(d.screening.total) + ' รายการ แสดงแยกเป็นกลุ่มเสี่ยง/รอประเมิน (' + Object.keys(d.screening.byCategory).map(function (c) { return esc(c) + ' ' + d.screening.byCategory[c]; }).join(', ') + ') – ไม่นับรวมเป็นผู้ป่วย</div>';
+      $('#page').innerHTML = html;
+      bindVillage('vSel', draw);
+      $$('.alert-card').forEach(function (el) { el.onclick = function () { go('followup'); }; });
+      var gf = $('#goF'); if (gf) gf.onclick = function () { go('followup'); };
+      var gs = d.disease.groups.filter(function (g) { return g.persons > 0 || ['DM', 'HT', 'CKD', 'DLP'].indexOf(g.code) >= 0; });
+      mkChart('cGroups', { type: 'bar', data: { labels: gs.map(function (g) { return g.code; }), datasets: [{ label: 'คน', data: gs.map(function (g) { return g.persons; }), backgroundColor: gs.map(function (g) { return g.color; }), borderRadius: 8 }] },
+        options: { plugins: { legend: { display: false }, tooltip: { callbacks: { title: function (i) { return gs[i[0].dataIndex].name; }, afterLabel: function (i) { var g = gs[i.dataIndex]; return g.pctOfPatients === null ? '' : g.pctOfPatients + '% ของผู้ป่วย'; } } } }, scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9' } }, x: { grid: { display: false } } } } });
+      var pg = gs.filter(function (g) { return g.persons > 0; });
+      mkChart('cPie', { type: 'doughnut', data: { labels: pg.map(function (g) { return g.code; }), datasets: [{ data: pg.map(function (g) { return g.persons; }), backgroundColor: pg.map(function (g) { return g.color; }), borderWidth: 2 }] }, options: { cutout: '62%', plugins: { legend: { position: 'bottom' } } } });
+      var vr = d.village.rows, vg = ['DM', 'HT', 'CKD', 'DLP', 'STROKE', 'CVD', 'ASTHMA', 'COPD', 'CANCER', 'OTHER_NCD', 'OTHER'].filter(function (g) { return vr.some(function (v) { return v.groups[g] > 0; }); });
+      mkChart('cVill', { type: 'bar', data: { labels: vr.map(function (v) { return v.moo === 'OUT' ? 'นอกเขต' : 'ม.' + v.moo; }), datasets: vg.map(function (g) { return { label: g, data: vr.map(function (v) { return v.groups[g]; }), backgroundColor: groupInfo(g).color, borderRadius: 3 }; }) },
+        options: { plugins: { tooltip: { callbacks: { title: function (i) { return vr[i[0].dataIndex].name; } } } }, scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, beginAtZero: true, grid: { color: '#f1f5f9' } } } } });
+      var pt = d.comorbidity.patterns;
+      mkChart('cCo', { type: 'bar', data: { labels: pt.map(function (p) { return p.pattern; }), datasets: [{ label: 'คน', data: pt.map(function (p) { return p.persons; }), backgroundColor: '#0ea5e9', borderRadius: 6 }] }, options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } } } });
+      if (d.disease.trend.length >= 2) { var tr = d.disease.trend; mkChart('cTrend', { type: 'line', data: { labels: tr.map(function (t) { return thDate(t.date); }), datasets: [{ label: 'ผู้ป่วยทั้งหมด', data: tr.map(function (t) { return t.patients; }), borderColor: '#059669', tension: .3 }].concat(['DM', 'HT', 'CKD'].map(function (g) { return { label: g, data: tr.map(function (t) { return t.groups[g] || 0; }), borderColor: groupInfo(g).color, tension: .3 }; })) } }); }
+    });
+  };
+  return draw();
+};
+
+/* ---------- NCD Overview (และหน้าหมู่บ้านของ อสม.) ---------- */
+PAGES.overview = function () {
+  var isV = S.session.user.role === 'VILLAGE_USER';
+  var draw = function () {
+    $('#page').innerHTML = loadingHtml();
+    return Promise.all([api('getDiseaseSummary', { moo: S.moo }), isV ? api('getDashboardData', { moo: S.moo }) : Promise.resolve(null)]).then(function (res) {
+      var d = res[0], dash = res[1], dis = d.disease, dem = d.demographic, html = '';
+      if (isV) {
+        var k = {}; dash.kpi.forEach(function (x) { k[x.key] = x; });
+        html += '<div class="hero-strip"><div><div class="pill white" style="margin-bottom:6px">SMART NCD MANAGEMENT</div><h2>' + esc(d.scope.label) + '</h2><div class="s">สรุปสถานการณ์โรคเรื้อรัง • ' + (d.scope.asOf ? 'ข้อมูล ณ ' + thDate(d.scope.asOf) : '') + '</div></div><div class="pill white">ผู้ใช้: ' + esc(S.session.user.displayName) + '</div></div>';
+        html += '<div class="grid g5">' + [kpiCardSimple('ผู้ป่วยทั้งหมด (คน)', k.patients.value, 'em', 'pulse'), kpiCardSimple('ผู้ป่วยเบาหวาน (DM)', k.DM.value, 'em', 'virus'), kpiCardSimple('ผู้ป่วยความดันโลหิตสูง (HT)', k.HT.value, 'blue', 'virus'),
+          kpiCardSimple('ผู้ป่วยโรคไตเรื้อรัง (CKD)', k.CKD.value, 'slate', 'virus'), kpiCardSimple('ผู้ป่วยที่มีโรคร่วม', k.comorbid.value, 'red', 'link')].join('') + '</div>';
+        var wait = dash.alerts.filter(function (a) { return ['pending', 'overdue', 'repeat', 'missed'].indexOf(a.key) >= 0; });
+        html += '<div class="grid g4" style="margin-top:16px">' + wait.map(function (a) { return '<div class="alert-card" data-k="' + a.key + '"><span>' + esc(a.label) + '</span><span class="n">' + fmt(a.count) + '</span></div>'; }).join('') + '</div>';
+      } else {
+        html += '<div class="toolbar no-print">' + villageSelect('vSel') + '</div>';
+        if (dis.pendingPersons) html += '<div class="alert warn">มีผู้ที่อยู่ระหว่างสงสัย/รอทบทวนการวินิจฉัย ' + fmt(dis.pendingPersons) + ' คน (ไม่นับรวมเป็นผู้ป่วย)</div>';
+      }
+      html += '<div class="grid g3" style="margin-top:16px"><div class="span2">' + card('ผู้ป่วยแยกกลุ่มโรค', table([{ label: 'กลุ่มโรค', get: function (g) { return '<span class="gchip" style="background:' + g.color + '">' + esc(g.code) + '</span> ' + esc(g.name); }, html: true },
+        { label: 'คน (ไม่ซ้ำ)', key: 'persons', num: true }, { label: '% ของผู้ป่วย', key: 'pctOfPatients', num: true }].concat(isV ? [] : [{ label: 'ระเบียน', key: 'records', num: true }, { label: 'ในเขต', key: 'inArea', num: true }, { label: 'นอกเขต', key: 'outArea', num: true }]), dis.groups.filter(function (g) { return g.persons > 0 || ['DM', 'HT', 'CKD', 'DLP'].indexOf(g.code) >= 0; })) + basis(dis.basis)) + '</div>' +
+        card('สัดส่วนผู้ป่วยแต่ละโรค', '<div class="chart-box"><canvas id="cPie"></canvas></div>' + (dis.topGroup ? '<div class="pill" style="margin-top:8px">โรคที่มีผู้ป่วยมากที่สุด: ' + esc(dis.topGroup.name) + ' ' + fmt(dis.topGroup.persons) + ' คน</div>' : '')) + '</div>';
+      html += '<div class="sec-title">ลักษณะประชากรผู้ป่วย (Demographic)</div><div class="grid g3">' + card('เพศ', '<div class="chart-box short"><canvas id="cSex"></canvas></div>') +
+        '<div class="span2">' + card('ช่วงอายุ × เพศ', '<div class="chart-box short"><canvas id="cAge"></canvas></div>', dem.ageStats ? 'อายุ ' + dem.ageStats.min + '–' + dem.ageStats.max + ' ปี • มัธยฐาน ' + dem.ageStats.median + ' • เฉลี่ย ' + dem.ageStats.mean : '') + '</div></div>';
+      html += '<div class="grid g2" style="margin-top:16px">' + card('กลุ่มโรค × ช่วงอายุ (คน)', table([{ label: 'กลุ่มโรค', key: 'name' }].concat(dem.bandLabels.map(function (l) { return { label: l, key: l, num: true }; })), dem.groupByAge)) +
+        card('กลุ่มโรค × เพศ และโรคร่วมตามช่วงอายุ', table([{ label: 'กลุ่มโรค', key: 'name' }, { label: 'ชาย', key: 'male', num: true }, { label: 'หญิง', key: 'female', num: true }, { label: 'ไม่ระบุ', key: 'unknownSex', num: true }], dem.groupBySex) +
+          '<div style="height:10px"></div>' + table([{ label: 'ช่วงอายุ', key: 'band' }, { label: 'ผู้ป่วย', key: 'persons', num: true }, { label: 'มีโรคร่วม ≥2', key: 'comorbid', num: true }], dem.ageBands)) + '</div>' + basis(dem.basis);
+      if (!isV) html += card('แนวโน้มรายปี', dis.trend.length >= 2 ? '<div class="chart-box"><canvas id="cTrend"></canvas></div>' : '<div class="empty">ต้องมีข้อมูลมากกว่า 1 รอบ (ต่างวันที่ข้อมูล) จึงจะแสดงแนวโน้ม</div>', '', 'mt').replace('class="card mt"', 'class="card" style="margin-top:16px"');
+      $('#page').innerHTML = html;
+      bindVillage('vSel', draw);
+      $$('.alert-card').forEach(function (el) { el.onclick = function () { go('followup'); }; });
+      var pg = dis.groups.filter(function (g) { return g.persons > 0; });
+      mkChart('cPie', { type: 'doughnut', data: { labels: pg.map(function (g) { return g.name; }), datasets: [{ data: pg.map(function (g) { return g.persons; }), backgroundColor: pg.map(function (g) { return g.color; }) }] }, options: { cutout: '60%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } } } } });
+      mkChart('cSex', { type: 'doughnut', data: { labels: dem.sex.map(function (s) { return s.sex; }), datasets: [{ data: dem.sex.map(function (s) { return s.persons; }), backgroundColor: ['#0ea5e9', '#ec4899', '#cbd5e1'] }] }, options: { cutout: '58%', plugins: { legend: { position: 'bottom' } } } });
+      mkChart('cAge', { type: 'bar', data: { labels: dem.ageBands.map(function (a) { return a.band; }), datasets: [{ label: 'ชาย', data: dem.ageBands.map(function (a) { return a.male; }), backgroundColor: '#0ea5e9', borderRadius: 4 }, { label: 'หญิง', data: dem.ageBands.map(function (a) { return a.female; }), backgroundColor: '#ec4899', borderRadius: 4 }, { label: 'ไม่ระบุ', data: dem.ageBands.map(function (a) { return a.unknownSex; }), backgroundColor: '#cbd5e1' }] }, options: { scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, beginAtZero: true } } } });
+      if (dis.trend && dis.trend.length >= 2) { var tr = dis.trend; mkChart('cTrend', { type: 'line', data: { labels: tr.map(function (t) { return thDate(t.date); }), datasets: [{ label: 'ผู้ป่วยทั้งหมด', data: tr.map(function (t) { return t.patients; }), borderColor: '#059669' }] } }); }
+    });
+  };
+  return draw();
+};
+function kpiCardSimple(label, value, tone, ic) { return kpiCard({ label: label, value: value, unit: 'คน', note: '' }, tone, ic); }
+
+/* ---------- Disease Analysis ---------- */
+PAGES.disease = function () {
+  var draw = function () {
+    $('#page').innerHTML = loadingHtml();
+    return api('getDiseaseSummary', { moo: S.moo }).then(function (d) {
+      var dis = d.disease;
+      var html = '<div class="toolbar no-print">' + villageSelect('vSel') + '<label class="field" style="max-width:320px">ค้นหา ICD-10 / ชื่อโรค<input id="icdQ" placeholder="เช่น E11 หรือ เบาหวาน"></label></div>';
+      html += '<div class="grid g2">' + card('ภาวะแทรกซ้อนในผู้ป่วยเบาหวาน (ตามรหัสวินิจฉัย)', '<div class="chart-box"><canvas id="cComp"></canvas></div>') +
+        card('สถานะการวินิจฉัย (ระเบียน)', '<div class="chart-box"><canvas id="cDiag"></canvas></div>', 'ยืนยันแล้ว vs สงสัย/รอทบทวน (แยกจากกัน)') + '</div>';
+      html += '<div class="grid g2" style="margin-top:16px">' + card('สถานะการรักษา (ระเบียน)', '<div class="chart-box"><canvas id="cTreat"></canvas></div>') + card('หน่วยบริการที่รักษา (คน)', '<div class="chart-box"><canvas id="cFac"></canvas></div>') + '</div>';
+      html += '<div style="margin-top:16px">' + card('ผู้ป่วยแยกรหัส ICD-10 (ไม่ซ้ำคน)', '<div id="icdTbl"></div>', fmt(dis.icd.length) + ' รหัส') + '</div>';
+      if (dis.diagnosisYear.length) html += '<div style="margin-top:16px">' + card('จำนวนการวินิจฉัยใหม่ตามปีที่วินิจฉัย', '<div class="chart-box short"><canvas id="cYear"></canvas></div>') + '</div>';
+      else html += '<div class="alert info" style="margin-top:16px">ยังไม่มีวันที่วินิจฉัยในข้อมูล – จึงยังวิเคราะห์จำนวนผู้ป่วยรายใหม่ตามปีไม่ได้ (ระบบไม่สร้างวันที่ทดแทน)</div>';
+      $('#page').innerHTML = html;
+      bindVillage('vSel', draw);
+      var renderIcd = function () {
+        var q = ($('#icdQ').value || '').trim().toLowerCase();
+        var rows = dis.icd.filter(function (r) { return !q || (r.icd10 + ' ' + r.name + ' ' + r.group).toLowerCase().indexOf(q) >= 0; });
+        $('#icdTbl').innerHTML = table([{ label: 'ICD-10', key: 'icd10' }, { label: 'ชื่อโรค', key: 'name' }, { label: 'กลุ่ม', get: function (r) { return gchips([r.group]); }, html: true }, { label: 'คน', key: 'persons', num: true }, { label: 'ระเบียน', key: 'records', num: true }], rows, { maxH: 460 });
+      };
+      $('#icdQ').oninput = renderIcd; renderIcd();
+      var bar = function (id, labels, data, color, horiz) { mkChart(id, { type: 'bar', data: { labels: labels, datasets: [{ data: data, backgroundColor: color, borderRadius: 6 }] }, options: { indexAxis: horiz ? 'y' : 'x', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, grid: { display: !horiz ? false : true } }, y: { beginAtZero: true } } } }); };
+      bar('cComp', dis.dmComplications.map(function (x) { return x.complication; }), dis.dmComplications.map(function (x) { return x.persons; }), '#10b981', true);
+      mkChart('cDiag', { type: 'doughnut', data: { labels: dis.diagnosisStatus.map(function (x) { return x.label; }), datasets: [{ data: dis.diagnosisStatus.map(function (x) { return x.count; }), backgroundColor: ['#059669', '#f97316', '#eab308', '#94a3b8'] }] }, options: { cutout: '60%', plugins: { legend: { position: 'bottom' } } } });
+      bar('cTreat', dis.treatmentStatus.map(function (x) { return x.label; }), dis.treatmentStatus.map(function (x) { return x.count; }), '#0ea5e9', true);
+      bar('cFac', dis.facility.map(function (x) { return x.label; }), dis.facility.map(function (x) { return x.persons; }), '#8b5cf6', true);
+      if (dis.diagnosisYear.length) bar('cYear', dis.diagnosisYear.map(function (x) { return +x.year + 543; }), dis.diagnosisYear.map(function (x) { return x.records; }), '#059669');
+    });
+  };
+  return draw();
+};
+
+/* ---------- Village NCD ---------- */
+PAGES.village = function () {
+  return api('getVillageNCDSummary', { moo: 'ALL' }).then(function (d) {
+    var v = d.village, rows = v.rows, G = ['DM', 'HT', 'CKD', 'DLP', 'STROKE', 'CVD', 'COPD', 'ASTHMA', 'CANCER'];
+    var tot = function (f) { return rows.reduce(function (a, r) { return a + (f(r) || 0); }, 0); };
+    var cols = [{ label: 'หมู่บ้าน', key: 'name' }, { label: 'ประชากร', key: 'population', num: true }, { label: 'ผู้ป่วย (คน)', key: 'patients', num: true }, { label: '% ต่อประชากร', key: 'pct', num: true }]
+      .concat(G.map(function (g) { return { label: g, get: function (r) { return r.groups[g]; }, num: true }; }))
+      .concat([{ label: 'โรคร่วม ≥2', key: 'multi2', num: true }, { label: 'โรคร่วม ≥3', key: 'multi3', num: true }]);
+    var foot = ['รวม', v.populationAvailable ? tot(function (r) { return r.population; }) : '—', tot(function (r) { return r.patients; }), ''].concat(G.map(function (g) { return tot(function (r) { return r.groups[g]; }); })).concat([tot(function (r) { return r.multi2; }), tot(function (r) { return r.multi3; })]);
+    var html = (v.populationAvailable ? '' : '<div class="alert info">ยังไม่มีจำนวนประชากรรายหมู่บ้าน – คอลัมน์ % ต่อประชากรจึงว่าง (ไม่ใช้จำนวนระเบียนหรือผู้ป่วยแทนตัวหาร)</div>') +
+      card('เปรียบเทียบผู้ป่วยโรคเรื้อรัง 12 หมู่บ้าน', table(cols, rows, { foot: foot }) + basis(v.basis + (v.populationAvailable ? ' • ประชากร: ' + v.populationSource + ' ' + (v.populationAsOf || '') : '')), '<button class="btn ghost sm" id="csvV">ส่งออก CSV</button>') +
+      '<div class="grid g2" style="margin-top:16px">' + card('Stacked Bar: ผู้ป่วยแต่ละกลุ่มโรครายหมู่บ้าน', '<div class="chart-box tall"><canvas id="cStack"></canvas></div>') +
+      card(v.populationAvailable ? 'ร้อยละผู้ป่วยต่อประชากรรายหมู่บ้าน' : 'ผู้ป่วยไม่ซ้ำคน และผู้ป่วยโรคร่วมรายหมู่บ้าน', '<div class="chart-box tall"><canvas id="cPct"></canvas></div>') + '</div>';
+    $('#page').innerHTML = html;
+    $('#csvV').onclick = function () { downloadCsv('village_ncd.csv', cols.map(function (c) { return c.label; }), rows.map(function (r) { return cols.map(function (c) { return c.get ? c.get(r) : r[c.key]; }); })); };
+    var labels = rows.map(function (r) { return r.moo === 'OUT' ? 'นอกเขต' : 'ม.' + r.moo; });
+    mkChart('cStack', { type: 'bar', data: { labels: labels, datasets: G.concat(['OTHER_NCD', 'OTHER']).filter(function (g) { return rows.some(function (r) { return r.groups[g]; }); }).map(function (g) { return { label: g, data: rows.map(function (r) { return r.groups[g]; }), backgroundColor: groupInfo(g).color }; }) },
+      options: { plugins: { tooltip: { callbacks: { title: function (i) { return rows[i[0].dataIndex].name; } } } }, scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, beginAtZero: true } } } });
+    if (v.populationAvailable) mkChart('cPct', { type: 'bar', data: { labels: labels, datasets: [{ label: '% ผู้ป่วยต่อประชากร', data: rows.map(function (r) { return r.pct; }), backgroundColor: '#0ea5e9', borderRadius: 6 }] } });
+    else mkChart('cPct', { type: 'bar', data: { labels: labels, datasets: [{ label: 'ผู้ป่วย (คน)', data: rows.map(function (r) { return r.patients; }), backgroundColor: '#059669', borderRadius: 6 }, { label: 'โรคร่วม ≥2 (คน)', data: rows.map(function (r) { return r.multi2; }), backgroundColor: '#f97316', borderRadius: 6 }] }, options: { scales: { x: { grid: { display: false } }, y: { beginAtZero: true } } } });
+  });
+};
+
+/* ---------- Comorbidity ---------- */
+PAGES.comorbidity = function () {
+  var draw = function () {
+    $('#page').innerHTML = loadingHtml();
+    return api('getComorbiditySummary', { moo: S.moo }).then(function (d) {
+      var c = d.comorbidity, isV = S.session.user.role === 'VILLAGE_USER';
+      var html = '<div class="toolbar no-print">' + villageSelect('vSel') + '</div>';
+      html += '<div class="grid g4">' + kpiCard({ label: 'ผู้ป่วยทั้งหมด (ไม่ซ้ำคน)', value: c.totalPatients, unit: 'คน' }, 'em', 'pulse') + kpiCard({ label: 'มีโรคร่วม ≥ 2 กลุ่มโรค', value: c.multi2, unit: 'คน', note: (c.pctMulti2 || 0) + '% ของผู้ป่วย' }, 'orange', 'link') +
+        kpiCard({ label: 'มีโรคร่วม ≥ 3 กลุ่มโรค', value: c.multi3, unit: 'คน', note: (c.pctMulti3 || 0) + '% ของผู้ป่วย' }, 'red', 'link') + kpiCard({ label: 'โรคเดียว', value: (c.groupsPerPerson[0] || {}).persons, unit: 'คน', note: ((c.groupsPerPerson[0] || {}).pct || 0) + '%' }, 'blue', 'pulse') + '</div>';
+      html += '<div class="grid g2" style="margin-top:16px">' + card('รูปแบบโรคร่วมที่กำหนด', '<div class="chart-box"><canvas id="cPat"></canvas></div>' + table([{ label: 'รูปแบบ', key: 'pattern' }, { label: 'มีอย่างน้อย (คน)', key: 'persons', num: true }, { label: '% ของผู้ป่วย', key: 'pctOfPatients', num: true }, { label: 'ตรงตัว (คน)', key: 'exactPersons', num: true }], c.patterns)) +
+        card('จำนวนกลุ่มโรคต่อผู้ป่วย 1 คน', '<div class="chart-box short"><canvas id="cN"></canvas></div>' + table([{ label: 'จำนวนกลุ่มโรค', key: 'n' }, { label: 'คน', key: 'persons', num: true }, { label: '%', key: 'pct', num: true }], c.groupsPerPerson)) + '</div>';
+      if (c.matrix.groups.length) {
+        var max = 0; c.matrix.values.forEach(function (r, i) { r.forEach(function (v, j) { if (i !== j && v > max) max = v; }); });
+        var mh = '<div class="tbl-wrap"><table class="t heat"><thead><tr><th></th>' + c.matrix.groups.map(function (g) { return '<th>' + esc(g) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+          c.matrix.values.map(function (r, i) { return '<tr><th>' + esc(c.matrix.groups[i]) + '</th>' + r.map(function (v, j) { var a = i === j ? 0 : (max ? v / max : 0); return '<td style="background:' + (i === j ? '#f1f5f9' : 'rgba(5,150,105,' + (0.08 + a * 0.75).toFixed(2) + ')') + ';color:' + (a > 0.55 ? '#fff' : '#0f172a') + '">' + fmt(v) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div>';
+        html += '<div style="margin-top:16px">' + card('Co-occurrence Matrix (คนที่มีทั้ง 2 กลุ่มโรค; เส้นทแยง = ผู้ป่วยกลุ่มนั้น)', mh) + '</div>';
+      }
+      if (!isV) html += '<div style="margin-top:16px">' + card('รูปแบบโรคร่วมที่พบบ่อย (ตรงตัว)', table([{ label: 'รูปแบบ', key: 'pattern' }, { label: 'คน', key: 'persons', num: true }, { label: '% ของผู้ป่วย', key: 'pctOfPatients', num: true }], c.exact)) + '</div>';
+      html += basis(c.basis);
+      $('#page').innerHTML = html;
+      bindVillage('vSel', draw);
+      mkChart('cPat', { type: 'bar', data: { labels: c.patterns.map(function (p) { return p.pattern; }), datasets: [{ label: 'มีอย่างน้อย', data: c.patterns.map(function (p) { return p.persons; }), backgroundColor: '#059669', borderRadius: 5 }, { label: 'ตรงตัว', data: c.patterns.map(function (p) { return p.exactPersons; }), backgroundColor: '#0ea5e9', borderRadius: 5 }] }, options: { indexAxis: 'y', scales: { x: { beginAtZero: true } } } });
+      mkChart('cN', { type: 'bar', data: { labels: c.groupsPerPerson.map(function (x) { return x.n + ' กลุ่มโรค'; }), datasets: [{ data: c.groupsPerPerson.map(function (x) { return x.persons; }), backgroundColor: ['#10b981', '#0ea5e9', '#f97316', '#ef4444', '#7c3aed'], borderRadius: 6 }] }, options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
+    });
+  };
+  return draw();
+};
+
+/* ---------- Patient Registry ---------- */
+PAGES.registry = function () {
+  var full = S.session.user.role !== 'VILLAGE_USER', L = S.session.lists, q = S.regQuery || { page: 1 };
+  var html = '<div class="card no-print"><div class="toolbar" style="margin:0">' + villageSelect('vSel') +
+    '<label class="field" style="flex:2">ค้นหา (' + (full ? 'PID, HN, ชื่อ, นามสกุล, ICD-10, ชื่อโรค' : 'ชื่อ, นามสกุล') + ')<input id="rq" value="' + esc(q.q || '') + '" placeholder="พิมพ์คำค้น…"></label>' +
+    '<label class="field">กลุ่มโรค<select id="rg">' + selectOpts(S.session.groups.map(function (g) { return { v: g.code, l: g.code + ' ' + g.th }; }), q.group, 'ทุกกลุ่ม') + '</select></label>' +
+    (full ? '<label class="field">ICD-10<input id="ri" value="' + esc(q.icd || '') + '" placeholder="เช่น E11"></label><label class="field">สถานะวินิจฉัย<select id="rd">' + selectOpts(L.diag, q.diagStatus, 'ทั้งหมด') + '</select></label>' +
+      '<label class="field">สถานะการรักษา<select id="rt">' + selectOpts(L.treat, q.treatStatus, 'ทั้งหมด') + '</select></label>' : '') +
+    '<label class="field">โรคร่วม<select id="rm">' + selectOpts([{ v: '2', l: '≥ 2 กลุ่มโรค' }, { v: '3', l: '≥ 3 กลุ่มโรค' }], q.minGroups, 'ไม่กรอง') + '</select></label>' +
+    '<label class="field">การติดตาม<select id="rf">' + selectOpts([{ v: 'need', l: 'ต้องติดตาม' }].concat(L.follow), q.needFollow ? 'need' : q.followStatus, 'ทั้งหมด') + '</select></label>' +
+    '<button class="btn" id="rs">ค้นหา</button><button class="btn ghost" id="rc">ล้าง</button></div></div><div id="regRes" style="margin-top:16px"></div>';
+  $('#page').innerHTML = html;
+  bindVillage('vSel', function () { run(1); });
+  var run = function (page) {
+    q = { q: $('#rq').value.trim(), group: $('#rg').value, moo: S.moo, minGroups: $('#rm').value, page: page || 1, pageSize: 25 };
+    var f = $('#rf').value; if (f === 'need') q.needFollow = true; else q.followStatus = f;
+    if (full) { q.icd = $('#ri').value.trim(); q.diagStatus = $('#rd').value; q.treatStatus = $('#rt').value; }
+    S.regQuery = q;
+    $('#regRes').innerHTML = loadingHtml();
+    return api('searchPatient', q).then(function (res) {
+      var cols = [{ label: 'รหัส', key: 'personId' }];
+      if (full) cols.push({ label: 'PID', get: function (p) { return p.pid || '<span class="pill orange">ไม่มี PID</span>'; }, html: true }, { label: 'HN', key: 'hn' });
+      cols = cols.concat([{ label: 'ชื่อ-นามสกุล', key: 'name' }, { label: 'เพศ', key: 'sex' }, { label: 'อายุ', key: 'age', num: true }, { label: 'หมู่บ้าน', get: function (p) { return p.moo ? 'ม.' + p.moo + ' ' + p.villageName : 'นอกเขต'; } },
+        { label: 'กลุ่มโรค', get: function (p) { return gchips(p.groups) + (p.pendingDiagnosis ? '<span class="pill orange">รอยืนยัน</span>' : ''); }, html: true },
+        { label: 'การติดตาม', get: function (p) { return p.needFollow && p.needFollow.length ? '<span class="pill orange">' + esc(p.needFollow.join(', ')) + '</span>' : (p.followStatus ? '<span class="pill gray">' + esc(p.followStatus) + '</span>' : ''); }, html: true }]);
+      if (full) cols.push({ label: 'ข้อมูลขาด', get: function (p) { return p.incomplete && p.incomplete.length ? '<span class="pill gray" title="' + esc(p.incomplete.join(', ')) + '">' + p.incomplete.length + ' รายการ</span>' : '<span class="pill">ครบ</span>'; }, html: true });
+      $('#regRes').innerHTML = card('ผลการค้นหา: ' + fmt(res.total) + ' คน', table(cols, res.items, { click: true, empty: 'ไม่พบผู้ป่วยตามเงื่อนไข' }) + pager(res, run), full ? 'นับไม่ซ้ำคน (PersonID) • คลิกแถวเพื่อดูโปรไฟล์' : 'แสดงข้อมูลตามสิทธิ์ อสม.');
+      bindRows($('#regRes'), res.items, function (p) { go('profile', p.personId); });
+    }).catch(function (e) { $('#regRes').innerHTML = errBox(e); });
+  };
+  $('#rs').onclick = function () { run(1); };
+  $('#rq').onkeydown = function (e) { if (e.key === 'Enter') run(1); };
+  $('#rc').onclick = function () { S.regQuery = null; PAGES.registry(); };
+  return run(q.page);
+};
+
+/* ---------- Patient Profile ---------- */
+PAGES.profile = function (id) {
+  if (!id) {
+    $('#page').innerHTML = card('เลือกผู้ป่วย', '<div class="toolbar"><label class="field">ค้นหาชื่อ/นามสกุล' + (S.session.user.role !== 'VILLAGE_USER' ? '/PID/HN' : '') + '<input id="pq"></label><button class="btn" id="pb">ค้นหา</button></div><div id="pr"></div>');
+    var s = function () { api('searchPatient', { q: $('#pq').value.trim(), moo: S.moo, pageSize: 20 }).then(function (r) { $('#pr').innerHTML = table([{ label: 'รหัส', key: 'personId' }, { label: 'ชื่อ', key: 'name' }, { label: 'หมู่', get: function (p) { return p.moo || 'นอกเขต'; } }, { label: 'กลุ่มโรค', get: function (p) { return gchips(p.groups); }, html: true }], r.items, { click: true }); bindRows($('#pr'), r.items, function (p) { go('profile', p.personId); }); }).catch(function (e) { $('#pr').innerHTML = errBox(e); }); };
+    $('#pb').onclick = s; $('#pq').onkeydown = function (e) { if (e.key === 'Enter') s(); };
+    return;
+  }
+  return api('getPatientProfile', id).then(function (d) {
+    var p = d.person, full = S.session.user.role !== 'VILLAGE_USER';
+    setTitle('Patient Profile', p.name);
+    var info = [['รหัสบุคคล', p.personId], ['PID', p.pid || (full ? 'ไม่มีข้อมูล PID' : '')], full ? ['HN', p.hn || '—'] : null, ['เพศ', p.sex || '—'], ['อายุ', p.age === null ? '—' : p.age + ' ปี' + (p.ageRefDate ? ' (ณ ' + thDate(p.ageRefDate) + ')' : '')],
+      ['หมู่บ้านที่รับผิดชอบ', p.moo ? 'หมู่ ' + p.moo + ' บ้าน' + p.villageName : 'นอกเขตรับผิดชอบ'], p.address ? ['ที่อยู่', p.address] : null, full ? ['เชื่อมทะเบียนประชาชน', p.inPopulationRegistry ? 'เชื่อมแล้ว' : 'ยังไม่เชื่อม (ไม่มีข้อมูลทะเบียนประชาชน)'] : null].filter(Boolean);
+    var html = '<div class="hero-strip"><div><div class="pill white">' + esc(p.personId) + '</div><h2 style="margin-top:6px">' + esc(p.name) + '</h2><div class="s">' + esc(d.summary.text) + '</div></div><div>' + gchips(d.summary.groups) + '</div></div>';
+    if (p.needFollow && p.needFollow.length) html += '<div class="alert warn">⚠ ต้องติดตาม: ' + esc(p.needFollow.join(', ')) + '</div>';
+    if (full && p.incomplete && p.incomplete.length) html += '<div class="alert info">ข้อมูลที่ยังขาด: ' + esc(p.incomplete.join(', ')) + ' – ระบบไม่สร้างข้อมูลทดแทน</div>';
+    html += '<div class="grid g3"><div>' + card('ข้อมูลพื้นฐาน', '<table class="t">' + info.map(function (r) { return '<tr><td class="muted" style="width:44%">' + esc(r[0]) + '</td><td>' + esc(r[1]) + '</td></tr>'; }).join('') + '</table>') + '</div><div class="span2">' +
+      card('สรุปโรคของผู้ป่วย (Patient Disease Summary)', full ? table([{ label: 'กลุ่ม', get: function (r) { return gchips([r.group]); }, html: true }, { label: 'ICD-10', key: 'icd10' }, { label: 'ชื่อโรค', key: 'name' }, { label: 'วันที่วินิจฉัย', get: function (r) { return thDate(r.diagnosisDate); } },
+        { label: 'สถานะวินิจฉัย', get: function (r) { return '<span class="pill ' + (r.diagnosisStatus === 'ยืนยันแล้ว' ? '' : 'orange') + '">' + esc(r.diagnosisStatus) + '</span>'; }, html: true }, { label: 'สถานะการรักษา', key: 'treatmentStatus' },
+        { label: 'หน่วยบริการ', key: 'facility' }, { label: 'รับบริการล่าสุด', get: function (r) { return thDate(r.lastVisitDate); } }, { label: 'ภาวะแทรกซ้อน', key: 'complication' }], d.diseases)
+        : d.diseases.map(function (x) { return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9"><span>' + gchips([x.group]) + ' ' + esc(x.groupName) + '</span><span class="pill ' + (x.diagnosisStatus === 'ยืนยันแล้ว' ? '' : 'orange') + '">' + esc(x.diagnosisStatus) + '</span></div>'; }).join(''),
+        '<b>' + esc(d.summary.text) + '</b>') + '</div></div>';
+    html += '<div class="grid g2" style="margin-top:16px">' + card('ประวัติการติดตาม', (d.follows.length ? '<div class="timeline">' + d.follows.map(function (f) { return '<div class="tl"><b>' + thDate(f.followUpDate) + '</b> <span class="pill ' + (f.status === 'ติดตามแล้ว' || f.status === 'เสร็จสิ้นการติดตาม' ? '' : 'orange') + '">' + esc(f.status) + '</span> <span class="muted small">โดย ' + esc(f.recordedBy) + (f.assignedTo ? ' • ผู้รับผิดชอบ ' + esc(f.assignedTo) : '') + '</span>' + (f.result ? '<div>ผล: ' + esc(f.result) + '</div>' : '') + (f.problems ? '<div>ปัญหา: ' + esc(f.problems) + '</div>' : '') + (f.carePlan ? '<div>แผน: ' + esc(f.carePlan) + '</div>' : '') + (f.nextDueDate ? '<div class="small">นัดครั้งต่อไป: ' + thDate(f.nextDueDate) + '</div>' : '') + (f.canEdit ? '<button class="btn ghost sm fe" data-id="' + esc(f.followUpId) + '" style="margin-top:6px">แก้ไข</button>' : '') + '</div>'; }).join('') + '</div>' : '<div class="empty">ยังไม่มีประวัติการติดตาม</div>'), '<button class="btn sm" id="addF">+ บันทึกการติดตาม</button>') +
+      (full ? card('ผลคัดกรอง (แยกจากการวินิจฉัย)', table([{ label: 'วันที่', get: function (s) { return thDate(s.screenDate); } }, { label: 'ประเภท', key: 'screenType' }, { label: 'ค่า', key: 'resultValue' }, { label: 'ผล', key: 'resultCategory' }], d.screenings, { empty: 'ไม่มีข้อมูลคัดกรอง' })) : card('หมายเหตุ', '<div class="muted">แสดงเฉพาะข้อมูลที่จำเป็นต่อการติดตามผู้ป่วยตามสิทธิ์ อสม. (ไม่แสดงรหัสโรค เวชระเบียน หรือผลตรวจ)</div>')) + '</div>';
+    $('#page').innerHTML = html;
+    $('#addF').onclick = function () { followForm(p, null); };
+    $$('.fe').forEach(function (b) { b.onclick = function () { followForm(p, d.follows.filter(function (f) { return f.followUpId === b.getAttribute('data-id'); })[0]); }; });
+  });
+};
+
+/* ---------- Follow-up ---------- */
+var assigneesCache = null;
+function followForm(person, f) {
+  var staff = S.session.user.role !== 'VILLAGE_USER', L = S.session.lists;
+  var load = staff && !assigneesCache ? api('getFollowUpSummary', {}).then(function (s) { assigneesCache = s.assignees; }) : Promise.resolve();
+  return load.then(function () {
+    var ass = (assigneesCache || []).filter(function (a) { return a.moos === 'ALL' || (person.moo && a.moos.split(',').indexOf(String(person.moo)) >= 0); });
+    var body = '<div class="alert info">ผู้ป่วย: <b>' + esc(person.name) + '</b> • ' + (person.moo ? 'หมู่ ' + person.moo : 'นอกเขต') + ' • ' + gchips(person.groups) + '</div><div class="grid g2">' +
+      '<label class="field">วันที่ติดตาม *<input type="date" id="fDate" max="' + todayIso() + '" value="' + esc(f ? f.followUpDate : todayIso()) + '"></label>' +
+      '<label class="field">สถานะการติดตาม *<select id="fSt">' + selectOpts(L.follow, f ? f.status : 'ติดตามแล้ว') + '</select></label>' +
+      '<label class="field">แหล่งข้อมูล<select id="fSrc">' + selectOpts(['เยี่ยมบ้าน', 'โทรศัพท์', 'คลินิก NCD', 'รพ.สต.', 'อื่น ๆ'], f ? f.dataSource : 'เยี่ยมบ้าน') + '</select></label>' +
+      (staff ? '<label class="field">ผู้รับผิดชอบ<select id="fAs">' + selectOpts(ass.map(function (a) { return { v: a.username, l: a.displayName + ' (' + a.username + ')' }; }), f ? f.assignedTo : '', '— ไม่ระบุ —') + '</select></label>' : '<div></div>') +
+      '<label class="field" style="grid-column:1/-1">ผลการติดตาม<textarea id="fRes" rows="2" maxlength="1000">' + esc(f ? f.result : '') + '</textarea></label>' +
+      '<label class="field" style="grid-column:1/-1">ปัญหาที่พบ<textarea id="fPro" rows="2" maxlength="1000">' + esc(f ? f.problems : '') + '</textarea></label>' +
+      (staff ? '<label class="field" style="grid-column:1/-1">แผนการดูแลต่อเนื่อง (กำหนดโดยบุคลากรทางการแพทย์)<textarea id="fPlan" rows="2" maxlength="1000">' + esc(f ? f.carePlan : '') + '</textarea></label>' +
+        '<label class="field">วันนัดติดตามครั้งต่อไป (ตามแผน)<input type="date" id="fNext" value="' + esc(f ? f.nextDueDate : '') + '"></label>' : '<div class="muted small" style="grid-column:1/-1">แผนการดูแลและวันนัดกำหนดโดยเจ้าหน้าที่/บุคลากรทางการแพทย์</div>') + '</div>';
+    modal(f ? 'แก้ไขบันทึกการติดตาม' : 'บันทึกการติดตามผู้ป่วย', body, [{ label: 'ยกเลิก', cls: 'ghost' }, { label: 'บันทึก', onClick: function (b) {
+      var data = { personId: person.personId, followUpId: f ? f.followUpId : '', followUpDate: $('#fDate').value, status: $('#fSt').value, dataSource: $('#fSrc').value, result: $('#fRes').value, problems: $('#fPro').value };
+      if (staff) { data.assignedTo = $('#fAs').value; data.carePlan = $('#fPlan').value; data.nextDueDate = $('#fNext').value; }
+      b.disabled = true;
+      return api('saveFollowUp', data).then(function () { toast('บันทึกการติดตามแล้ว', 'ok'); go(S.page, S.arg); return true; }).catch(function (e) { b.disabled = false; toast(e.message, 'err'); return false; });
+    } }]);
+  });
+}
+function pickPatient(cb) {
+  var b = modal('เลือกผู้ป่วย', '<div class="toolbar"><label class="field">ค้นหาชื่อ/นามสกุล<input id="ppq"></label><button class="btn" id="ppb">ค้นหา</button></div><div id="ppr"></div>');
+  var s = function () { api('searchPatient', { q: $('#ppq').value.trim(), moo: S.moo, pageSize: 15 }).then(function (r) { $('#ppr').innerHTML = table([{ label: 'ชื่อ', key: 'name' }, { label: 'หมู่', get: function (p) { return p.moo || 'นอกเขต'; } }, { label: 'กลุ่มโรค', get: function (p) { return gchips(p.groups); }, html: true }], r.items, { click: true }); bindRows($('#ppr'), r.items, function (p) { closeModal(); cb(p); }); }).catch(function (e) { $('#ppr').innerHTML = errBox(e); }); };
+  $('#ppb').onclick = s; $('#ppq').onkeydown = function (e) { if (e.key === 'Enter') s(); }; s();
+}
+PAGES.followup = function () {
+  var staff = S.session.user.role !== 'VILLAGE_USER', st = { status: '', mine: !staff, page: 1 };
+  return api('getFollowUpSummary', { moo: S.moo }).then(function (s) {
+    assigneesCache = s.assignees;
+    var html = '<div class="toolbar no-print">' + villageSelect('vSel') + '<button class="btn" id="newF">+ บันทึกการติดตาม</button></div>';
+    html += '<div class="grid g3">' + s.alerts.filter(function (a) { return staff || a.key !== 'incomplete'; }).map(function (a) { return '<div class="alert-card" data-k="' + a.key + '"><span>' + esc(a.label) + '</span><span class="n">' + fmt(a.count) + '</span></div>'; }).join('') + '</div>';
+    html += '<div id="alList" style="margin-top:12px"></div>';
+    html += '<div class="grid g3" style="margin-top:16px"><div class="span2">' + card('บันทึกการติดตาม', '<div class="toolbar"><label class="field">สถานะ<select id="fs">' + selectOpts(S.session.lists.follow, '', 'ทั้งหมด') + '</select></label><label class="field" style="max-width:220px">ขอบเขต<select id="fm"><option value="0">ทั้งหมดตามสิทธิ์</option><option value="1"' + (st.mine ? ' selected' : '') + '>ที่ได้รับมอบหมาย/บันทึกโดยฉัน</option></select></label></div><div id="fList"></div>') + '</div>' +
+      card('สถานะติดตามล่าสุด (คน)', '<div class="chart-box short"><canvas id="cFs"></canvas></div>' + (s.performance.length ? '<div class="sec-title">ผลการดำเนินงาน (ผู้บันทึก)</div>' + table([{ label: 'ผู้บันทึก', key: 'username' }, { label: 'บันทึก', key: 'records', num: true }, { label: 'ผู้ป่วย', key: 'persons', num: true }], s.performance) : '')) + '</div>';
+    $('#page').innerHTML = html;
+    bindVillage('vSel', function () { PAGES.followup(); });
+    $('#newF').onclick = function () { pickPatient(function (p) { followForm(p, null); }); };
+    $$('.alert-card').forEach(function (el) {
+      el.onclick = function () {
+        var a = s.alerts.filter(function (x) { return x.key === el.getAttribute('data-k'); })[0];
+        $('#alList').innerHTML = card(a.label + ' (' + a.count + ' คน)', table([{ label: 'ชื่อ', key: 'name' }, { label: 'หมู่', key: 'moo' }, { label: 'สถานะล่าสุด', key: 'status' }, { label: 'วันนัด', get: function (i) { return thDate(i.nextDueDate); } }, { label: 'เหตุผล', key: 'reason' }], a.items, { click: true, maxH: 360 }));
+        bindRows($('#alList'), a.items, function (i) { go('profile', i.personId); });
+      };
+    });
+    var lst = function (page) {
+      api('getFollowUpRecords', { status: $('#fs').value, mine: $('#fm').value === '1', moo: S.moo, page: page || 1 }).then(function (r) {
+        $('#fList').innerHTML = table([{ label: 'วันที่', get: function (f) { return thDate(f.followUpDate); } }, { label: 'ผู้ป่วย', key: 'personName' }, { label: 'หมู่บ้าน', key: 'villageName' }, { label: 'กลุ่มโรค', get: function (f) { return gchips(f.diseaseGroups ? f.diseaseGroups.split(',') : []); }, html: true },
+          { label: 'สถานะ', get: function (f) { return '<span class="pill ' + (['ติดตามแล้ว', 'เสร็จสิ้นการติดตาม'].indexOf(f.status) >= 0 ? '' : 'orange') + '">' + esc(f.status) + '</span>'; }, html: true }, { label: 'ผู้รับผิดชอบ', key: 'assignedTo' }, { label: 'นัดถัดไป', get: function (f) { return thDate(f.nextDueDate); } }], r.items, { click: true, empty: 'ยังไม่มีบันทึกการติดตาม' }) + pager(r, lst);
+        bindRows($('#fList'), r.items, function (f) { go('profile', f.personId); });
+      }).catch(function (e) { $('#fList').innerHTML = errBox(e); });
+    };
+    $('#fs').onchange = function () { lst(1); }; $('#fm').onchange = function () { lst(1); }; lst(1);
+    var sc = s.statusCounts;
+    mkChart('cFs', { type: 'doughnut', data: { labels: Object.keys(sc), datasets: [{ data: Object.keys(sc).map(function (k) { return sc[k]; }), backgroundColor: ['#059669', '#f97316', '#ef4444', '#eab308', '#0ea5e9', '#64748b'] }] }, options: { cutout: '55%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } } } } });
+  });
+};
+
+/* ---------- Screening ---------- */
+PAGES.screening = function () {
+  return api('getScreeningRecords', { moo: S.moo }).then(function (r) {
+    var html = '<div class="alert info">' + esc(r.note) + '</div><div class="toolbar">' + villageSelect('vSel', { out: false }) + '<button class="btn" id="addS">+ บันทึกผลคัดกรอง</button></div>';
+    html += '<div class="grid g4">' + S.session.lists.screenResults.map(function (c) { return kpiCard({ label: c, value: r.byCategory[c] || 0, unit: 'ราย', note: 'ไม่นับเป็นผู้ป่วย' }, c === 'ปกติ' ? 'em' : 'orange', 'clipboard'); }).join('') + '</div>';
+    html += '<div style="margin-top:16px">' + card('รายการผลคัดกรอง', table([{ label: 'วันที่', get: function (s) { return thDate(s.screenDate); } }, { label: 'ชื่อ', key: 'name' }, { label: 'หมู่', key: 'moo' }, { label: 'ประเภท', key: 'screenType' }, { label: 'ค่า', key: 'resultValue' }, { label: 'ผล (ตามเกณฑ์)', key: 'resultCategory' }, { label: 'เกณฑ์', key: 'criteria' }, { label: 'ผู้บันทึก', key: 'recordedBy' }], r.items, { empty: 'ยังไม่มีข้อมูลคัดกรอง' })) + '</div>';
+    $('#page').innerHTML = html;
+    bindVillage('vSel', PAGES.screening);
+    $('#addS').onclick = function () {
+      var L = S.session.lists;
+      modal('บันทึกผลคัดกรอง', '<div class="alert warn">ผลคัดกรองไม่ใช่การวินิจฉัย – ระบบจะไม่นับเป็นผู้ป่วย</div><div class="grid g2">' +
+        '<label class="field">หมู่ที่ *<select id="sM">' + selectOpts(S.session.villages.map(function (v) { return { v: v.moo, l: 'หมู่ ' + v.moo + ' ' + v.name }; }), S.moo) + '</select></label>' +
+        '<label class="field">PID (ถ้ามี)<input id="sP" maxlength="13" inputmode="numeric"></label><label class="field">ชื่อ<input id="sF"></label><label class="field">นามสกุล<input id="sL"></label>' +
+        '<label class="field">วันที่คัดกรอง *<input type="date" id="sD" max="' + todayIso() + '" value="' + todayIso() + '"></label><label class="field">ประเภท *<select id="sT">' + selectOpts(L.screenTypes) + '</select></label>' +
+        '<label class="field">ค่าผล (เช่น FBS 130, BP 150/95)<input id="sV"></label><label class="field">ผลตามเกณฑ์ *<select id="sC">' + selectOpts(L.screenResults) + '</select></label>' +
+        '<label class="field" style="grid-column:1/-1">เกณฑ์ที่ใช้<input id="sK"></label></div>',
+        [{ label: 'ยกเลิก', cls: 'ghost' }, { label: 'บันทึก', onClick: function () {
+          return api('saveScreening', { moo: $('#sM').value, pid: $('#sP').value, firstName: $('#sF').value, lastName: $('#sL').value, screenDate: $('#sD').value, screenType: $('#sT').value, resultValue: $('#sV').value, resultCategory: $('#sC').value, criteria: $('#sK').value })
+            .then(function () { toast('บันทึกผลคัดกรองแล้ว', 'ok'); PAGES.screening(); return true; }).catch(function (e) { toast(e.message, 'err'); return false; });
+        } }]);
+    };
+  });
+};
+
+/* ---------- Reports ---------- */
+PAGES.reports = function () {
+  return api('getReportList').then(function (list) {
+    var needMoo = function (t) { return t === 'VILLAGE_DETAIL'; };
+    var isV = S.session.user.role === 'VILLAGE_USER';
+    $('#page').innerHTML = '<div class="card no-print"><div class="toolbar" style="margin:0"><label class="field" style="flex:2">รายงาน<select id="rpT">' + selectOpts(list.map(function (r) { return { v: r.type, l: r.title }; })) + '</select></label>' +
+      (isV ? '' : villageSelect('vSel')) + '<button class="btn" id="rpGo">สร้างรายงาน</button><button class="btn ghost" id="rpPrint">พิมพ์</button><button class="btn ghost" id="rpCsv">ส่งออก CSV</button></div></div><div id="rpOut" style="margin-top:16px"><div class="empty">เลือกรายงานแล้วกด "สร้างรายงาน"</div></div>';
+    bindVillage('vSel', function () { });
+    var last = null;
+    $('#rpGo').onclick = function () {
+      var t = $('#rpT').value;
+      if (needMoo(t) && !isV && (S.moo === 'ALL' || S.moo === 'OUT')) { toast('กรุณาเลือกหมู่บ้านสำหรับรายงานระดับหมู่บ้าน', 'err'); return; }
+      $('#rpOut').innerHTML = loadingHtml('กำลังสร้างรายงาน…');
+      api('getReport', t, { moo: S.moo }).then(function (r) {
+        last = r;
+        $('#rpOut').innerHTML = '<div class="card"><h2 style="margin:0 0 6px;color:var(--em-900)">' + esc(r.title) + '</h2><div class="report-meta"><div><b>ขอบเขต:</b> ' + esc(r.meta.scope) + '</div><div><b>ข้อมูล ณ:</b> ' + thDate(r.meta.asOf) + '</div><div><b>สร้างเมื่อ:</b> ' + thDate(r.meta.generatedAt) + '</div><div><b>ผู้สร้าง:</b> ' + esc(r.meta.by) + '</div></div>' +
+          r.sections.map(function (s) { return '<div class="sec-title">' + esc(s.title) + '</div>' + table(s.columns.map(function (c, i) { return { label: c, get: function (row) { return row[i]; }, num: false }; }), s.rows, { empty: 'ไม่มีข้อมูล' }) + basis(s.note); }).join('') +
+          '<div class="muted small" style="margin-top:14px">ทุกอัตราส่วนระบุตัวตั้ง/ตัวหาร/วันที่ข้อมูล • ข้อมูลส่วนบุคคล – ใช้ภายในหน่วยงานตามวัตถุประสงค์เท่านั้น</div></div>';
+      }).catch(function (e) { $('#rpOut').innerHTML = errBox(e); });
+    };
+    $('#rpPrint').onclick = function () { window.print(); };
+    $('#rpCsv').onclick = function () {
+      if (!last) return toast('ยังไม่มีรายงาน', 'err');
+      var rows = []; last.sections.forEach(function (s) { rows.push([s.title]); rows.push(s.columns); s.rows.forEach(function (r) { rows.push(r); }); rows.push([]); });
+      downloadCsv(last.type + '_' + todayIso() + '.csv', [last.title, 'ขอบเขต: ' + last.meta.scope, 'ข้อมูล ณ ' + last.meta.asOf], rows);
+    };
+  });
+};
+
+/* ---------- Excel Import ---------- */
+PAGES.import = function () {
+  var maxMB = S.session.settings.maxImportMB, st = {};
+  var steps = function (n) { return '<div class="steps">' + ['1. เลือกไฟล์', '2. ตรวจโครงสร้าง', '3. Preview & ตรวจสอบ', '4. ยืนยันนำเข้า', '5. ผลลัพธ์'].map(function (s, i) { return '<span class="step ' + (i + 1 === n ? 'on' : (i + 1 < n ? 'done' : '')) + '">' + s + '</span>'; }).join('') + '</div>'; };
+  var stage1 = function () {
+    $('#page').innerHTML = steps(1) + card('นำเข้าข้อมูลจาก Excel', '<div class="drop" id="drop">' + icon('upload', 36) + '<div style="font-size:17px;font-weight:500;margin-top:8px">คลิกเพื่อเลือกไฟล์ .xlsx / .xls (ไม่เกิน ' + maxMB + ' MB)</div>' +
+      '<div class="muted small">รองรับ: NCD_Patient_Registry (แม่แบบทะเบียน) • รายงาน JHCIS rpersonchronic_list • ไฟล์ทะเบียนประชาชน (PID, ชื่อ, นามสกุล, หมู่ที่, วันเกิด)</div></div><input type="file" id="file" accept=".xlsx,.xls" class="hidden">' +
+      '<div class="alert info" style="margin-top:14px">ขั้นตอนความปลอดภัย: ตรวจชื่อ/ขนาด/ชนิดไฟล์ → ตรวจหัวคอลัมน์ → ตรวจ PID, ICD-10, กลุ่มโรค, วันที่, VillageID, สถานะวินิจฉัย, ข้อมูลซ้ำ → Preview → ADMIN ยืนยัน → สำรองข้อมูลอัตโนมัติ → Upsert (ไม่ลบประวัติเดิม)</div>');
+    $('#drop').onclick = function () { $('#file').click(); };
+    $('#file').onchange = function () { var f = this.files[0]; if (f) readFile(f); };
+  };
+  var readFile = function (f) {
+    if (!/\.(xlsx|xls)$/i.test(f.name)) return toast('รองรับเฉพาะไฟล์ .xlsx และ .xls', 'err');
+    if (f.size > maxMB * 1048576) return toast('ไฟล์ใหญ่เกิน ' + maxMB + ' MB', 'err');
+    if (!window.XLSX) return toast('โหลดไลบรารีอ่าน Excel ไม่สำเร็จ (ตรวจการเชื่อมต่ออินเทอร์เน็ต)', 'err');
+    $('#page').innerHTML = steps(2) + loadingHtml('กำลังอ่านไฟล์…');
+    var rd = new FileReader();
+    rd.onload = function () {
+      try {
+        var wb = XLSX.read(new Uint8Array(rd.result), { type: 'array', cellDates: false });
+        var p = NCDParser.parseWorkbook(wb, S.session.villages);
+        if (p.error) { $('#page').innerHTML = steps(2) + errBox(p.error) + '<button class="btn ghost" id="back">เลือกไฟล์ใหม่</button>'; $('#back').onclick = stage1; return; }
+        st = { file: f, parsed: p }; stage2();
+      } catch (e) { $('#page').innerHTML = steps(2) + errBox('อ่านไฟล์ไม่สำเร็จ: ' + e.message); }
+    };
+    rd.readAsArrayBuffer(f);
+  };
+  var TYPE_L = { REGISTRY: 'ทะเบียนผู้ป่วย NCD (แม่แบบ)', JHCIS_REPORT: 'รายงาน JHCIS rpersonchronic_list', POPULATION: 'ทะเบียนประชาชน (ตัวหารประชากร)' };
+  var stage2 = function () {
+    var p = st.parsed, prev = p.rows.slice(0, 8);
+    var cols = ['_row', 'recordId', 'pid', 'firstName', 'lastName', 'moo', 'icd10', 'diseaseGroup', 'diseaseName', 'diagnosisStatus', 'treatmentStatus'].filter(function (k) { return k === '_row' || p.headersFound.indexOf(k) >= 0; });
+    $('#page').innerHTML = steps(2) + card('ตรวจโครงสร้างไฟล์', '<div class="report-meta"><div><b>ไฟล์:</b> ' + esc(st.file.name) + '</div><div><b>ขนาด:</b> ' + fmt(st.file.size / 1024) + ' KB</div><div><b>ชนิดที่ตรวจพบ:</b> ' + esc(TYPE_L[p.type]) + '</div><div><b>ชีต:</b> ' + esc(p.sheetName) + (p.headerRow ? ' (หัวตารางแถว ' + p.headerRow + ')' : '') + '</div><div><b>จำนวนแถวข้อมูล:</b> ' + fmt(p.rows.length) + '</div><div><b>วันที่ข้อมูล:</b> ' + thDate(p.asOf) + '</div></div>' +
+      '<div class="small"><b>คอลัมน์ที่พบ:</b> ' + p.headersFound.map(function (h) { return '<span class="pill gray" style="margin:2px">' + esc(h) + '</span>'; }).join('') + '</div>' +
+      (p.issues.length ? '<div class="alert warn" style="margin-top:10px">' + p.issues.map(esc).join('<br>') + '</div>' : '') +
+      (p.totals && p.totals.length ? '<div class="sec-title">ยอดสรุปในรายงานต้นฉบับ (ใช้เทียบหลังนำเข้า)</div>' + table([{ label: 'หมู่บ้าน', key: 'name' }, { label: 'คน', key: 'persons', num: true }, { label: 'ระเบียน', key: 'records', num: true }], p.totals) : '') +
+      '<div class="sec-title">ตัวอย่างข้อมูล 8 แถวแรก</div>' + table(cols.map(function (k) { return { label: k === '_row' ? 'แถว' : k, key: k }; }), prev) +
+      '<div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap"><button class="btn ghost" id="back">เลือกไฟล์ใหม่</button><button class="btn" id="send"' + (p.rows.length && !p.issues.some(function (i) { return /ระบุหมู่/.test(i); }) ? '' : ' disabled') + '>ส่งตรวจสอบข้อมูล (Preview)</button></div><div id="prog" style="margin-top:12px"></div>');
+    $('#back').onclick = stage1;
+    $('#send').onclick = upload;
+  };
+  var upload = function () {
+    var p = st.parsed;
+    $('#send').disabled = true;
+    $('#prog').innerHTML = '<div class="progress"><div id="pbar"></div></div><div class="small muted" id="ptxt">เริ่มส่งข้อมูล…</div>';
+    api('startImport', { importType: p.type, fileName: st.file.name, fileSize: st.file.size, sheetName: p.sheetName, headersFound: p.headersFound, totalRows: p.rows.length, dataAsOfDate: p.asOf }).then(function (r) {
+      st.importId = r.importId;
+      var size = 400, chunks = [];
+      for (var i = 0; i < p.rows.length; i += size) chunks.push(i);
+      var seq = Promise.resolve();
+      chunks.forEach(function (start, ci) {
+        seq = seq.then(function () { return api('stageImportChunk', st.importId, start + 1, p.rows.slice(start, start + size)); }).then(function () {
+          var pct = Math.round((ci + 1) / chunks.length * 100); $('#pbar').style.width = pct + '%'; $('#ptxt').textContent = 'ส่งข้อมูลแล้ว ' + pct + '%';
+        });
+      });
+      return seq.then(function () { $('#ptxt').textContent = 'กำลังตรวจสอบข้อมูลที่เซิร์ฟเวอร์…'; return api('previewImport', st.importId); });
+    }).then(function (pv) { st.preview = pv; st.decisions = {}; stage3(); }).catch(function (e) { $('#prog').innerHTML = errBox(e); });
+  };
+  var stage3 = function () {
+    var pv = st.preview, c = pv.counts;
+    var tiles = [['INSERT', 'เพิ่มใหม่', 'em'], ['UPDATE', 'ปรับปรุง', 'blue'], ['SKIP', 'ข้าม (เหมือนเดิม)', 'slate'], ['CONFLICT', 'ขัดแย้ง (รอตัดสินใจ)', 'orange'], ['DUPLICATE', 'ซ้ำในไฟล์', 'orange'], ['REJECT', 'ไม่ผ่าน', 'red']];
+    var itemCols = [{ label: 'แถว', key: 'sourceRow' }, { label: 'ชื่อ', key: 'name' }, { label: 'RecordID', key: 'recordId' }, { label: 'ICD-10', key: 'icd10' }, { label: 'กลุ่ม', key: 'group' }, { label: 'รายละเอียด', key: 'reason' }];
+    var html = steps(3) + '<div class="grid g3">' + tiles.map(function (t) { return kpiCard({ label: t[1], value: c[t[0]], unit: 'แถว' }, t[2], 'list'); }).join('') + '</div>';
+    html += '<div class="alert info" style="margin-top:14px">ไฟล์ ' + esc(pv.fileName) + ' • ' + fmt(pv.totalRows) + ' แถว • บุคคลในไฟล์ ' + fmt(pv.personsInFile) + ' คน • บุคคลใหม่ ' + fmt(pv.newPersons) + ' คน • วันที่ข้อมูล ' + thDate(pv.dataAsOfDate) +
+      (pv.notInFile ? '<br>⚠ มีระเบียนเดิมในระบบ ' + fmt(pv.notInFile) + ' รายการที่ไม่พบในไฟล์นี้ – ระบบไม่ลบอัตโนมัติ (ตรวจสอบสถานะ เช่น เสียชีวิต/ย้ายออก ด้วยตนเอง)' : '') + '</div>';
+    if (pv.conflicts.length) html += card('รายการขัดแย้ง – เลือกการดำเนินการ (ค่าเริ่มต้น: ข้าม)', table(itemCols.concat([{ label: 'การดำเนินการ', get: function (i) { return '<select class="dec" data-r="' + i.rowNo + '">' + i.decisionOptions.map(function (o) { return '<option value="' + o + '"' + (o === 'SKIP' ? ' selected' : '') + '>' + ({ UPDATE: 'อัปเดตระเบียนเดิม', INSERT: 'เพิ่มเป็นรายการใหม่', SKIP: 'ข้าม', LINK: 'เชื่อม PID กับบุคคลเดิม' }[o]) + '</option>'; }).join('') + '</select>'; }, html: true }]), pv.conflicts, { maxH: 380 }));
+    if (pv.rejects.length) html += '<div style="margin-top:14px">' + card('แถวที่ไม่ผ่านการตรวจสอบ (จะไม่ถูกนำเข้า)', table(itemCols, pv.rejects, { maxH: 320 }), '<button class="btn ghost sm" id="csvRej">ดาวน์โหลดรายการ</button>') + '</div>';
+    if (pv.duplicates.length) html += '<div style="margin-top:14px">' + card('ข้อมูลซ้ำในไฟล์ (ไม่นำเข้าซ้ำ)', table(itemCols, pv.duplicates, { maxH: 260 })) + '</div>';
+    if (pv.warnings.length) html += '<div style="margin-top:14px">' + card('คำเตือน (นำเข้าได้ แต่ควรตรวจสอบ)', table([{ label: 'คำเตือน', key: 'message' }, { label: 'จำนวนแถว', key: 'count', num: true }], pv.warnings)) + '</div>';
+    html += '<div style="margin-top:14px">' + card('ตัวอย่างรายการที่จะเพิ่ม/ปรับปรุง', table(itemCols.concat([{ label: 'การดำเนินการ', key: 'action' }]), pv.samples.INSERT.concat(pv.samples.UPDATE), { maxH: 320 })) + '</div>';
+    html += '<div class="card" style="margin-top:14px;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap"><button class="btn ghost" id="cancel">ยกเลิกการนำเข้า</button><button class="btn orange" id="commit"' + (c.INSERT + c.UPDATE + pv.conflicts.length ? '' : ' disabled') + '>ยืนยันนำเข้า (สำรองข้อมูลก่อนอัตโนมัติ)</button></div>';
+    $('#page').innerHTML = html;
+    $$('.dec').forEach(function (s) { s.onchange = function () { st.decisions[s.getAttribute('data-r')] = s.value; }; });
+    var cr = $('#csvRej'); if (cr) cr.onclick = function () { downloadCsv('import_rejects.csv', ['แถว', 'ชื่อ', 'RecordID', 'ICD-10', 'เหตุผล'], pv.rejects.map(function (i) { return [i.sourceRow, i.name, i.recordId, i.icd10, i.reason]; })); };
+    $('#cancel').onclick = function () { api('cancelImport', st.importId).then(function () { toast('ยกเลิกการนำเข้าแล้ว'); stage1(); }); };
+    $('#commit').onclick = function () {
+      confirmBox('ยืนยันนำเข้า: เพิ่ม ' + c.INSERT + ' • ปรับปรุง ' + c.UPDATE + ' • ขัดแย้งที่เลือกดำเนินการ ' + Object.keys(st.decisions).filter(function (k) { return st.decisions[k] !== 'SKIP'; }).length + ' รายการ ระบบจะสำรองข้อมูลก่อนดำเนินการ').then(function (ok) {
+        if (!ok) return;
+        $('#page').innerHTML = steps(4) + loadingHtml('กำลังสำรองข้อมูลและนำเข้า…');
+        api('importExcel', st.importId, st.decisions, c).then(function (r) {
+          $('#page').innerHTML = steps(5) + '<div class="alert ok">✔ นำเข้าสำเร็จ: ' + esc(r.message) + '</div>' + card('ผลการนำเข้า', '<div class="report-meta"><div><b>ImportID:</b> ' + esc(r.importId) + '</div><div><b>วันที่ข้อมูล:</b> ' + thDate(r.dataAsOfDate) + '</div><div><b>ไฟล์สำรอง (Drive ID):</b> ' + esc(r.backupFileId) + '</div></div><div style="display:flex;gap:10px"><button class="btn" id="toDash">ไปที่ Dashboard</button><button class="btn ghost" id="again">นำเข้าไฟล์อื่น</button></div>');
+          return api('getSessionInfo').then(function (s) { S.session = s; });
+        }).then(function () { var d = $('#toDash'); if (d) d.onclick = function () { go(S.session.menu[0].id); }; var a = $('#again'); if (a) a.onclick = stage1; })
+          .catch(function (e) { $('#page').innerHTML = steps(4) + errBox(e) + '<button class="btn ghost" id="back">กลับ</button>'; $('#back').onclick = stage1; });
+      });
+    };
+  };
+  stage1();
+};
+
+/* ---------- User Management ---------- */
+PAGES.users = function () {
+  return api('manageUsers', 'list').then(function (users) {
+    var html = '<div class="toolbar"><button class="btn" id="uNew">+ เพิ่มผู้ใช้</button><button class="btn ghost" id="uImp">นำเข้าจาก UserAccounts_Template.xlsx</button><input type="file" id="uFile" accept=".xlsx,.xls" class="hidden"></div>' +
+      '<div class="alert info">รหัสผ่านถูกเก็บเป็น Hash + Salt เท่านั้น • ระบบออกรหัสผ่านชั่วคราวให้ครั้งเดียว ผู้ใช้ต้องเปลี่ยนเมื่อเข้าสู่ระบบครั้งแรก • อสม. 1 บัญชี = 1 หมู่บ้าน</div>' +
+      card('บัญชีผู้ใช้งาน (' + users.length + ')', table([{ label: 'Username', key: 'username' }, { label: 'ชื่อ', key: 'displayName' }, { label: 'บทบาท', get: function (u) { return '<span class="pill ' + (u.role === 'ADMIN' ? 'red' : u.role === 'STAFF' ? 'blue' : '') + '">' + esc(u.role) + '</span>'; }, html: true },
+        { label: 'หมู่บ้าน', key: 'villageScope' }, { label: 'สถานะ', get: function (u) { return '<span class="pill ' + (u.status === 'ACTIVE' ? '' : 'gray') + '">' + esc(u.status) + '</span>' + (u.locked ? ' <span class="pill orange">ล็อก</span>' : '') + (u.mustChangePassword ? ' <span class="pill gray">รอเปลี่ยนรหัส</span>' : ''); }, html: true },
+        { label: 'เข้าสู่ระบบล่าสุด', get: function (u) { return thDate(u.lastLoginAt); } }], users, { click: true }), 'คลิกเพื่อแก้ไข');
+    $('#page').innerHTML = html;
+    bindRows($('#page'), users, editUser);
+    $('#uNew').onclick = function () { editUser(null); };
+    $('#uImp').onclick = function () { $('#uFile').click(); };
+    $('#uFile').onchange = function () {
+      var f = this.files[0]; if (!f) return;
+      if (f.size > 2 * 1048576 || !/\.(xlsx|xls)$/i.test(f.name)) return toast('ไฟล์ไม่ถูกต้อง', 'err');
+      var rd = new FileReader();
+      rd.onload = function () {
+        var p = NCDParser.parseUsers(XLSX.read(new Uint8Array(rd.result), { type: 'array' }));
+        if (p.error) return toast(p.error, 'err');
+        modal('นำเข้าบัญชีผู้ใช้ ' + p.rows.length + ' รายการ', table([{ label: 'Username', key: 'username' }, { label: 'ชื่อ', key: 'displayName' }, { label: 'Role', key: 'role' }, { label: 'VillageID/หมู่', key: 'villageId' }, { label: 'สถานะ', key: 'status' }], p.rows, { maxH: 360 }),
+          [{ label: 'ยกเลิก', cls: 'ghost' }, { label: 'สร้างบัญชี', onClick: function () { return api('manageUsers', 'import', { rows: p.rows }).then(showCreated).then(function () { return false; }); } }]);
+      };
+      rd.readAsArrayBuffer(f);
+    };
+  });
+};
+function showCreated(res) {
+  var ok = res.filter(function (r) { return !r.error; });
+  modal('ผลการสร้างบัญชี', '<div class="alert warn">รหัสผ่านชั่วคราวแสดงเพียงครั้งเดียว – ส่งมอบให้ผู้ใช้แบบตัวต่อตัว/ช่องทางที่ปลอดภัย และอย่าบันทึกเก็บเป็นไฟล์</div>' +
+    table([{ label: 'แถว', key: 'row' }, { label: 'Username', key: 'username' }, { label: 'Role', key: 'role' }, { label: 'หมู่', key: 'villageScope' }, { label: 'รหัสผ่านชั่วคราว', get: function (r) { return r.tempPassword ? '<code style="font-size:15px">' + esc(r.tempPassword) + '</code>' : ''; }, html: true }, { label: 'ผล', get: function (r) { return r.error ? '<span class="pill red">' + esc(r.error) + '</span>' : '<span class="pill">สร้างแล้ว</span>'; }, html: true }], res),
+    [{ label: 'พิมพ์', cls: 'ghost', onClick: function () { window.print(); return false; } }, { label: 'ปิด', onClick: function () { PAGES.users(); } }]);
+  toast('สร้างบัญชีสำเร็จ ' + ok.length + ' รายการ', 'ok');
+}
+function editUser(u) {
+  var vs = S.session.villages;
+  var body = '<div class="grid g2"><label class="field">Username *<input id="eU" value="' + esc(u ? u.username : '') + '"' + (u ? ' disabled' : '') + ' maxlength="32"></label><label class="field">ชื่อผู้ใช้งาน *<input id="eN" value="' + esc(u ? u.displayName : '') + '"></label>' +
+    '<label class="field">บทบาท *<select id="eR">' + selectOpts([{ v: 'VILLAGE_USER', l: 'อสม. (VILLAGE_USER)' }, { v: 'STAFF', l: 'เจ้าหน้าที่ (STAFF)' }, { v: 'ADMIN', l: 'ผู้ดูแลระบบ (ADMIN)' }], u ? u.role : 'VILLAGE_USER') + '</select></label>' +
+    '<label class="field">ขอบเขตหมู่บ้าน *<input id="eS" value="' + esc(u ? u.villageScope : '') + '" placeholder="อสม.: เลขหมู่ 1 หมู่ • STAFF: ALL หรือ 1,2,3"></label>' +
+    (u ? '<label class="field">สถานะ<select id="eT">' + selectOpts(['ACTIVE', 'DISABLED'], u.status) + '</select></label>' : '') + '<label class="field">หมายเหตุ<input id="eX" value="' + esc(u ? u.note : '') + '"></label></div>' +
+    '<div class="muted small" style="margin-top:8px">หมู่บ้าน: ' + vs.map(function (v) { return v.moo + '=' + esc(v.name); }).join(', ') + '</div>';
+  var acts = [{ label: 'ปิด', cls: 'ghost' }];
+  if (u) {
+    acts.push({ label: 'รีเซ็ตรหัสผ่าน', cls: 'orange', onClick: function () { return api('manageUsers', 'resetPassword', { username: u.username }).then(function (r) { modal('รหัสผ่านชั่วคราวของ ' + u.username, '<div class="alert warn">แสดงครั้งเดียว: <code style="font-size:18px">' + esc(r.tempPassword) + '</code></div>'); return false; }).catch(function (e) { toast(e.message, 'err'); return false; }); } });
+    if (u.locked) acts.push({ label: 'ปลดล็อก', cls: 'ghost', onClick: function () { return api('manageUsers', 'unlock', { username: u.username }).then(function () { toast('ปลดล็อกแล้ว', 'ok'); PAGES.users(); }); } });
+    acts.push({ label: 'เพิกถอน Session', cls: 'ghost', onClick: function () { return api('manageUsers', 'revokeSessions', { username: u.username }).then(function () { toast('เพิกถอน Session แล้ว', 'ok'); }); } });
+  }
+  acts.push({ label: 'บันทึก', onClick: function () {
+    var d = { username: $('#eU').value.trim(), displayName: $('#eN').value.trim(), role: $('#eR').value, villageScope: $('#eS').value.trim(), note: $('#eX').value };
+    if (u) d.status = $('#eT').value;
+    return api('manageUsers', u ? 'update' : 'create', d).then(function (r) {
+      if (!u) showCreated([{ row: 1, username: r.username, role: r.role, villageScope: r.villageScope, tempPassword: r.tempPassword }]); else { toast('บันทึกแล้ว', 'ok'); PAGES.users(); }
+      return !!u;
+    }).catch(function (e) { toast(e.message, 'err'); return false; });
+  } });
+  modal(u ? 'แก้ไขผู้ใช้ ' + u.username : 'เพิ่มผู้ใช้', body, acts);
+}
+
+/* ---------- Import History ---------- */
+PAGES.history = function (page) {
+  return api('getImportHistory', { page: +page || 1 }).then(function (r) {
+    $('#page').innerHTML = card('ประวัติการนำเข้าข้อมูล', table([{ label: 'เริ่ม', get: function (h) { return thDate(h.StartedAt); } }, { label: 'ImportID', key: 'ImportID' }, { label: 'ประเภท', key: 'ImportType' }, { label: 'ไฟล์', key: 'FileName' },
+      { label: 'สถานะ', get: function (h) { return '<span class="pill ' + (h.Status === 'SUCCESS' ? '' : h.Status === 'CANCELLED' ? 'gray' : 'orange') + '">' + esc(h.Status) + '</span>'; }, html: true }, { label: 'ผู้ดำเนินการ', key: 'Username' }, { label: 'แถว', key: 'TotalRows', num: true },
+      { label: 'เพิ่ม', key: 'Inserted', num: true }, { label: 'ปรับปรุง', key: 'Updated', num: true }, { label: 'ข้าม', key: 'Skipped', num: true }, { label: 'ไม่ผ่าน', key: 'Rejected', num: true }, { label: 'ขัดแย้ง', key: 'Conflicts', num: true },
+      { label: 'วันที่ข้อมูล', get: function (h) { return thDate(h.DataAsOfDate); } }, { label: 'สำรองข้อมูล', key: 'BackupFileId' }], r.items, { empty: 'ยังไม่มีประวัติ' }) + pager(r, function (p) { PAGES.history(p); }));
+  });
+};
+
+/* ---------- Audit Log ---------- */
+PAGES.audit = function () {
+  $('#page').innerHTML = card('Audit Log', '<div class="toolbar"><label class="field">ผู้ใช้<input id="aU"></label><label class="field">การกระทำ<input id="aA" placeholder="เช่น LOGIN, IMPORT"></label><label class="field">ผล<select id="aR">' + selectOpts(['OK', 'FAIL', 'DENIED'], '', 'ทั้งหมด') + '</select></label><label class="field">ตั้งแต่<input type="date" id="aF"></label><label class="field">ถึง<input type="date" id="aT"></label><button class="btn" id="aGo">ค้นหา</button></div><div id="aOut"></div>');
+  var run = function (page) {
+    api('getAuditLog', { username: $('#aU').value, action: $('#aA').value, result: $('#aR').value, from: $('#aF').value, to: $('#aT').value, page: page || 1 }).then(function (r) {
+      $('#aOut').innerHTML = table([{ label: 'เวลา', key: 'Timestamp' }, { label: 'ผู้ใช้', key: 'Username' }, { label: 'บทบาท', key: 'Role' }, { label: 'การกระทำ', key: 'Action' }, { label: 'เป้าหมาย', key: 'Target' }, { label: 'รายละเอียด', key: 'Detail' },
+        { label: 'ผล', get: function (a) { return '<span class="pill ' + (a.Result === 'OK' ? '' : a.Result === 'DENIED' ? 'red' : 'orange') + '">' + esc(a.Result) + '</span>'; }, html: true }], r.items) + pager(r, run);
+    }).catch(function (e) { $('#aOut').innerHTML = errBox(e); });
+  };
+  $('#aGo').onclick = function () { run(1); }; run(1);
+};
+
+/* ---------- System Settings ---------- */
+PAGES.settings = function () {
+  return api('getSystemSettings').then(function (s) {
+    var html = '<div class="grid g2">' + card('ตั้งค่าระบบ', s.config.map(function (c) { return '<label class="field" style="margin-bottom:10px">' + esc(c.key) + ' <span class="muted small">— ' + esc(c.description) + '</span><input data-k="' + esc(c.key) + '" class="cfg" value="' + esc(c.value) + '"></label>'; }).join('') + '<button class="btn" id="saveCfg">บันทึกค่าตั้ง</button>') +
+      card('ฐานข้อมูลและการสำรอง', '<div class="report-meta"><div><b>Data version:</b> ' + esc(s.dataVersion) + '</div><div><b>Backup folder:</b> ' + esc(s.backupFolderId || 'สร้างอัตโนมัติเมื่อสำรองครั้งแรก') + '</div></div><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn blue" id="valDb">ตรวจสอบฐานข้อมูล</button><button class="btn ghost" id="bk">สำรองข้อมูลทันที</button></div><div id="valOut" style="margin-top:12px"></div>') + '</div>';
+    html += '<div style="margin-top:16px">' + card('ข้อมูล 12 หมู่บ้าน (VillageID และประชากรที่ใช้เป็นตัวหาร)', '<div class="alert info">กรอกจำนวนประชากรจากแหล่งทางการเท่านั้น (เช่น HDC Type Area 1+3) พร้อมวันที่และแหล่งที่มา – หากว่าง ระบบจะไม่คำนวณร้อยละ</div><div class="tbl-wrap"><table class="t"><thead><tr><th>VillageID</th><th>หมู่</th><th>ชื่อหมู่บ้าน</th><th>ประชากร</th><th>ณ วันที่</th><th>แหล่งที่มา</th><th>หมายเหตุ</th></tr></thead><tbody>' +
+      s.villages.map(function (v) { return '<tr class="vr">' + ['VillageID', 'Moo', 'VillageName', 'Population', 'PopulationAsOf', 'PopulationSource', 'Note'].map(function (k) { return '<td><input data-k="' + k + '" value="' + esc(v[k]) + '" ' + (k === 'PopulationAsOf' ? 'type="date"' : '') + ' style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:6px;min-width:' + (k === 'Moo' ? 50 : 110) + 'px"></td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div><button class="btn" id="saveV" style="margin-top:10px">บันทึกข้อมูลหมู่บ้าน</button>') + '</div>';
+    html += '<div style="margin-top:16px">' + card('ตารางอ้างอิง ICD-10 ↔ กลุ่มโรค (DiseaseReference)', '<div class="toolbar"><label class="field"><input id="drQ" placeholder="ค้นหา ICD-10 / ชื่อโรค"></label><button class="btn" id="drNew">+ เพิ่ม/แก้ไขรายการ</button></div><div id="drT"></div>') + '</div>';
+    $('#page').innerHTML = html;
+    $('#saveCfg').onclick = function () { var v = {}; $$('.cfg').forEach(function (i) { v[i.getAttribute('data-k')] = i.value.trim(); }); api('saveSystemSettings', v).then(function (r) { toast('บันทึกแล้ว: ' + (r.changed.join(', ') || 'ไม่มีการเปลี่ยนแปลง'), 'ok'); }).catch(function (e) { toast(e.message, 'err'); }); };
+    $('#saveV').onclick = function () { var list = $$('.vr').map(function (tr) { var o = {}; $$('input', tr).forEach(function (i) { o[i.getAttribute('data-k')] = i.value.trim(); }); return o; }); api('saveVillageData', list).then(function () { toast('บันทึกข้อมูลหมู่บ้านแล้ว', 'ok'); }).catch(function (e) { toast(e.message, 'err'); }); };
+    $('#valDb').onclick = function () { $('#valOut').innerHTML = loadingHtml(); api('validateDatabase').then(function (r) { $('#valOut').innerHTML = '<div class="alert ' + (r.ok ? 'ok' : 'warn') + '">' + (r.ok ? '✔ โครงสร้างฐานข้อมูลถูกต้อง' : 'พบปัญหา ' + r.totalIssues + ' รายการ') + '<br><span class="small">' + esc((r.info || []).join(' • ')) + '</span></div>' + table([{ label: 'ระดับ', key: 'level' }, { label: 'ชีต', key: 'sheet' }, { label: 'รายละเอียด', key: 'message' }], r.issues, { maxH: 300, empty: 'ไม่พบปัญหา' }); }).catch(function (e) { $('#valOut').innerHTML = errBox(e); }); };
+    $('#bk').onclick = function () { api('runBackupNow').then(function (r) { toast('สำรองข้อมูลแล้ว: ' + r.backupFileId, 'ok'); }).catch(function (e) { toast(e.message, 'err'); }); };
+    var drRender = function () { var q = $('#drQ').value.toLowerCase(); var rows = s.diseases.filter(function (d) { return !q || (d.ICD10 + ' ' + d.DiseaseNameTH).toLowerCase().indexOf(q) >= 0; }); $('#drT').innerHTML = table([{ label: 'ICD-10', key: 'ICD10' }, { label: 'ชื่อโรค', key: 'DiseaseNameTH' }, { label: 'กลุ่ม', key: 'DiseaseGroup' }, { label: 'ภาวะแทรกซ้อน', key: 'Complication' }, { label: 'ความมั่นใจ', get: function (d) { return '<span class="pill ' + (d.MappingConfidence === 'ควรตรวจสอบ' ? 'orange' : '') + '">' + esc(d.MappingConfidence) + '</span>'; }, html: true }], rows, { click: true, maxH: 420 }); bindRows($('#drT'), rows, drEdit); };
+    var drEdit = function (d) {
+      modal('รายการอ้างอิง ICD-10', '<div class="grid g2"><label class="field">ICD-10 *<input id="dI" value="' + esc(d ? d.ICD10 : '') + '"></label><label class="field">กลุ่มโรค *<select id="dG">' + selectOpts(s.groups.map(function (g) { return { v: g.code, l: g.code + ' ' + g.th }; }), d ? d.DiseaseGroup : 'DM') + '</select></label>' +
+        '<label class="field" style="grid-column:1/-1">ชื่อโรค (ตรงกับที่ JHCIS แสดง) *<input id="dN" value="' + esc(d ? d.DiseaseNameTH : '') + '"></label><label class="field">ภาวะแทรกซ้อน<input id="dC" value="' + esc(d ? d.Complication : '') + '"></label><label class="field">ความมั่นใจ<select id="dM">' + selectOpts(['ตรวจสอบแล้ว', 'ตรงตามชื่อรหัส', 'ควรตรวจสอบ', 'มาตรฐาน ICD-10'], d ? d.MappingConfidence : 'ตรวจสอบแล้ว') + '</select></label>' +
+        '<label class="field">เป็น NCD<select id="dY">' + selectOpts(['Y', 'N'], d ? d.IsNCD : 'Y') + '</select></label><label class="field">หมายเหตุ<input id="dX" value="' + esc(d ? d.Note : '') + '"></label></div>',
+        [{ label: 'ยกเลิก', cls: 'ghost' }, { label: 'บันทึก', onClick: function () { return api('saveDiseaseReference', { ICD10: $('#dI').value, DiseaseGroup: $('#dG').value, DiseaseNameTH: $('#dN').value, Complication: $('#dC').value, MappingConfidence: $('#dM').value, IsNCD: $('#dY').value, Note: $('#dX').value }).then(function (r) { toast('บันทึกแล้ว' + (r.warning ? ' • ' + r.warning : ''), r.warning ? '' : 'ok'); PAGES.settings(); return true; }).catch(function (e) { toast(e.message, 'err'); return false; }); } }]);
+    };
+    $('#drQ').oninput = drRender; $('#drNew').onclick = function () { drEdit(null); }; drRender();
+  });
+};
+
+/* ---------- Change password ---------- */
+function showChangePassword(force) {
+  modal(force ? 'ตั้งรหัสผ่านใหม่ (บังคับ)' : 'เปลี่ยนรหัสผ่าน', '<div class="grid" style="gap:10px"><label class="field">รหัสผ่านปัจจุบัน/ชั่วคราว<input type="password" id="cO" autocomplete="current-password"></label><label class="field">รหัสผ่านใหม่ (≥ 8 ตัว มีตัวอักษรและตัวเลข)<input type="password" id="cN" autocomplete="new-password"></label><label class="field">ยืนยันรหัสผ่านใหม่<input type="password" id="cC" autocomplete="new-password"></label></div>',
+    (force ? [{ label: 'ออกจากระบบ', cls: 'ghost', onClick: function () { doLogout(); } }] : [{ label: 'ยกเลิก', cls: 'ghost' }]).concat([{ label: 'บันทึก', onClick: function () {
+      if ($('#cN').value !== $('#cC').value) { toast('รหัสผ่านใหม่ไม่ตรงกัน', 'err'); return false; }
+      return api('changePassword', $('#cO').value, $('#cN').value).then(function (r) { storeToken(r.token); toast('เปลี่ยนรหัสผ่านแล้ว', 'ok'); closeModal(); startApp(); return false; }).catch(function (e) { toast(e.message, 'err'); return false; });
+    } }]));
+}
+
+/* ------------------------------ BOOT ------------------------------ */
+function boot() {
+  if (!HAS_GSR && !API_OK) {
+    $('#boot').innerHTML = '<div class="login-card" style="max-width:560px"><h2>SMART NCD MANAGEMENT – BUENGNIAM</h2><p>ยังไม่ได้เชื่อมต่อ Backend</p><div class="alert warn">ตั้งค่า GAS_API_URL ใน index.html ให้เป็น Web App URL (ลงท้าย /exec) – ดูคู่มือติดตั้งหัวข้อ 6–7</div></div>';
+    return;
+  }
+  var t = null; try { t = sessionStorage.getItem('ncd_token'); } catch (e) { }
+  if (!t) return showLogin();
+  S.token = t;
+  startApp().catch(function (e) { showLogin(e && e.code !== 'AUTH' ? e.message : ''); });
+}
+boot();
+})();
+</script>
+</body>
+</html>
